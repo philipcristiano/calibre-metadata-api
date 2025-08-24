@@ -10,7 +10,7 @@ jobs:
   docker_push:
     name: "Push docker image"
     uses: "philipcristiano/workflows/.github/workflows/docker-build-push.yml@main"
-    needs: [flake, rust, database]
+    needs: [flake, rust]
     with:
       repository: ${{ github.repository }}
       timeout: 25
@@ -24,7 +24,7 @@ jobs:
     uses: "philipcristiano/workflows/.github/workflows/rust_with_postgres.yml@main"
 
   release-please:
-    needs: [flake, rust, database]
+    needs: [flake, rust]
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v4
