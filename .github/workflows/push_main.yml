@@ -1,0 +1,41 @@
+name: Main Branch Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  docker_push:
+    name: "Push docker image"
+    uses: "philipcristiano/workflows/.github/workflows/docker-build-push.yml@main"
+    needs: [flake, rust, database]
+    with:
+      repository: ${{ github.repository }}
+      timeout: 25
+
+    secrets:
+      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+
+
+  rust:
+    uses: "philipcristiano/workflows/.github/workflows/rust_with_postgres.yml@main"
+
+  release-please:
+    needs: [flake, rust, database]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+          release-type: rust
+
+  flake:
+    uses: "philipcristiano/workflows/.github/workflows/nix.yml@main"
+    with:
+      flakes-from-devshell: true
+      script: |
+        export SQLX_OFFLINE=true
+        cargo build

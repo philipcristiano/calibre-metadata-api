@@ -1,0 +1,33 @@
+name: Pull Request
+
+on:
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  check-for-cc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check-for-cc
+        id: check-for-cc
+        uses: agenthunt/conventional-commit-checker-action@v2.0.0
+
+  docker_build:
+    uses: "philipcristiano/workflows/.github/workflows/docker-build.yml@main"
+    with:
+      timeout: 25
+      check_command: "-h"
+
+  rust:
+    uses: "philipcristiano/workflows/.github/workflows/rust_with_postgres.yml@main"
+
+  flake:
+    uses: "philipcristiano/workflows/.github/workflows/nix.yml@main"
+    with:
+      flakes-from-devshell: true
+      script: |
+        export SQLX_OFFLINE=true
+        cargo build
