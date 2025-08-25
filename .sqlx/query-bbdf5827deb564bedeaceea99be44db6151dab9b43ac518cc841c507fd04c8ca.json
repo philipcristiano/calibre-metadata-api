@@ -1,0 +1,44 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT books.id as id, title, pubdate, authors.name as author_name, authors.id as author_id\n            FROM books\n            JOIN books_authors_link bal\n                ON bal.book = books.id\n            JOIN authors\n                ON bal.author = authors.id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer"
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "pubdate",
+        "ordinal": 2,
+        "type_info": "Datetime"
+      },
+      {
+        "name": "author_name",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "author_id",
+        "ordinal": 4,
+        "type_info": "Integer"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "bbdf5827deb564bedeaceea99be44db6151dab9b43ac518cc841c507fd04c8ca"
+}
