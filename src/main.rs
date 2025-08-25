@@ -71,7 +71,8 @@ async fn main() {
     let app = Router::new()
         // `get /` goes to `root`
         .route("/", get(root))
-        .route("/v1/authors", get(get_author))
+        .route("/v1/authors", get(get_authors))
+        .route("/v1/books", get(get_books))
         //.route("/v1/authors/{author_id}", get(get_authors))
         .with_state(app_state.clone())
         .layer(CookieManagerLayer::new())
@@ -104,6 +105,7 @@ struct V1APIResponse {
 #[serde(rename_all = "snake_case")]
 enum CDBStruct {
     Author(Author),
+    Book(Book),
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -114,7 +116,18 @@ struct Author {
     link: String,
 }
 
-async fn get_author(State(app_state): State<AppState>) -> Result<Response, AppError> {
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct Book {
+    id: i64,
+    title: String,
+    // With calibre-web, the isbn is always empty in this table
+    //isbn: Option<String>,
+    pubdate: Option<chrono::NaiveDateTime>,
+    author_name: String,
+    author_id: i64,
+}
+
+async fn get_authors(State(app_state): State<AppState>) -> Result<Response, AppError> {
     let recs = sqlx::query_as!(
         Author,
         r#"
@@ -126,6 +139,26 @@ async fn get_author(State(app_state): State<AppState>) -> Result<Response, AppEr
     .await?;
 
     let cdbstruct = recs.into_iter().map(CDBStruct::Author).collect();
+    let resp = V1APIResponse { data: cdbstruct };
+    Ok(Json(resp).into_response())
+}
+
+async fn get_books(State(app_state): State<AppState>) -> Result<Response, AppError> {
+    let recs = sqlx::query_as!(
+        Book,
+        r#"
+            SELECT books.id as id, title, pubdate, authors.name as author_name, authors.id as author_id
+            FROM books
+            JOIN books_authors_link bal
+                ON bal.book = books.id
+            JOIN authors
+                ON bal.author = authors.id
+        "#
+    )
+    .fetch_all(&app_state.db)
+    .await?;
+
+    let cdbstruct = recs.into_iter().map(CDBStruct::Book).collect();
     let resp = V1APIResponse { data: cdbstruct };
     Ok(Json(resp).into_response())
 }
