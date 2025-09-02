@@ -22,7 +22,7 @@ jobs:
       check_command: "-h"
 
   rust:
-    uses: "philipcristiano/workflows/.github/workflows/rust_with_postgres.yml@main"
+    uses: "philipcristiano/workflows/.github/workflows/rust.yml@main"
 
   flake:
     uses: "philipcristiano/workflows/.github/workflows/nix.yml@main"

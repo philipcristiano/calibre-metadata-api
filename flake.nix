@@ -22,14 +22,8 @@
                     extensions = [ "rust-src" "rustfmt" ];
                 })
                 rust-analyzer
-            ] ++
-              pkgs.lib.optionals pkgs.stdenv.isDarwin [
-                darwin.apple_sdk.frameworks.Security # Should only be for darwin
-                darwin.apple_sdk.frameworks.SystemConfiguration
-            ]
-            ;
+            ];
             shellHook = ''
-              export DATABASE_URL=sqlite://metadata.db
             '';
           };
 

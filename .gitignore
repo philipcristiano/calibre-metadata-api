@@ -21,3 +21,4 @@ target
 #.idea/
 
 /metadata.db
+/examples/download-to-file/output/

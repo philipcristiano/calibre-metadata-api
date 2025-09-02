@@ -1,3 +1,10 @@
+[workspace]
+members = [".", "examples/*"]
+# Only check / build main crates by default (check all with `--workspace`)
+default-members = ["."]
+# Example has been deleted, but README.md remains
+resolver = "3"
+
 [package]
 name = "calibre-metadata-api"
 version = "0.0.1"

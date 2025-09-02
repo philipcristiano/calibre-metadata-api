@@ -1,0 +1,9 @@
+---
+type: Book
+source: Calibre
+author: "[[{{author_name}}]]"
+title: "{{title}}"
+
+---
+
+{{title}} was imported from Calibre
