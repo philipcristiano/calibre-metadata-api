@@ -21,7 +21,7 @@ jobs:
 
 
   rust:
-    uses: "philipcristiano/workflows/.github/workflows/rust_with_postgres.yml@main"
+    uses: "philipcristiano/workflows/.github/workflows/rust.yml@main"
 
   release-please:
     needs: [flake, rust]
