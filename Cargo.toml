@@ -7,7 +7,7 @@ resolver = "3"
 
 [package]
 name = "calibre-metadata-api"
-version = "0.0.1"
+version = "0.1.0"
 edition = "2024"
 description = "API for Calibre's metadata DB"
 license = "Apache-2.0"
