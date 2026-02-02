@@ -37,7 +37,7 @@ uuid = {version = "1.8.0", features = ["v4"]}
 
 rust-embed = { version = "8.3.0", features = ["axum", "mime-guess", "mime_guess"] }
 redacted = "0.2.0"
-jsonwebtoken = "9.3.0"
+jsonwebtoken = "10.0.0"
 indexmap = { version = "2.5.0", features = ["serde"] }
 serde_qs = { version = "0.15.0", features = ["axum", "tracing"] }
 thiserror = "2.0.0"
