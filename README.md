@@ -33,6 +33,15 @@ The server listens on `127.0.0.1:3002` by default.
 
 All responses have the shape `{ "data": [...] }` for lists or `{ "data": {...} }` for single items.
 
+Errors return JSON with an `error` field:
+
+```json
+{ "error": "not_found" }
+{ "error": "internal_error" }
+```
+
+CORS is enabled for all origins, so the API can be called directly from browser-based clients.
+
 List endpoints accept `?limit=N&offset=N` for pagination (default limit: 100).
 
 ### Endpoints
