@@ -50,12 +50,12 @@ Returns `200 OK` if the server and database are healthy, `503` if the database i
 
 #### `GET /v1/authors`
 
-Returns all authors. Supports `?limit=` and `?offset=`.
+Returns all authors, ordered by sort name. Supports `?limit=` and `?offset=`.
 
 ```json
 {
   "data": [
-    { "author": { "id": 1, "name": "Ursula K. Le Guin", "sort": "Le Guin, Ursula K.", "link": "" } }
+    { "id": 1, "name": "Ursula K. Le Guin", "sort": "Le Guin, Ursula K.", "link": "" }
   ]
 }
 ```
@@ -66,14 +66,16 @@ Returns a single author by ID, or `404` if not found.
 
 #### `GET /v1/books`
 
-Returns books. Supports filtering and pagination:
+Returns books. Supports filtering, sorting, and pagination:
 
 | Parameter | Description |
 |---|---|
 | `author_id` | Only books by this author ID |
 | `series_id` | Only books in this series ID |
 | `tag_id` | Only books with this tag ID |
-| `q` | Case-insensitive title search |
+| `q` | Search by title or author name (case-insensitive) |
+| `sort` | Sort field: `id` (default), `title`, `pubdate` |
+| `sort_dir` | Sort direction: `asc` (default), `desc` |
 | `limit` | Max results (default: 100, max: 1000) |
 | `offset` | Skip N results (default: 0) |
 
@@ -84,24 +86,25 @@ GET /v1/books?author_id=3&limit=20&offset=20
 # Books with a specific tag
 GET /v1/books?tag_id=7
 
-# Title search
-GET /v1/books?q=foundation
+# Search by title or author name
+GET /v1/books?q=asimov
+
+# Sorted alphabetically, newest first
+GET /v1/books?sort=title&sort_dir=desc
 ```
 
 ```json
 {
   "data": [
     {
-      "book": {
-        "id": 42,
-        "title": "The Left Hand of Darkness",
-        "pubdate": "1969-03-01T00:00:00",
-        "authors": [{ "id": 1, "name": "Ursula K. Le Guin" }],
-        "tags": ["Science Fiction", "Fantasy"],
-        "isbn": "9780441478125",
-        "series_name": "Hainish Cycle",
-        "series_index": 4.0
-      }
+      "id": 42,
+      "title": "The Left Hand of Darkness",
+      "pubdate": "1969-03-01T00:00:00",
+      "authors": [{ "id": 1, "name": "Ursula K. Le Guin" }],
+      "tags": ["Science Fiction", "Fantasy"],
+      "isbn": "9780441478125",
+      "series_name": "Hainish Cycle",
+      "series_index": 4.0
     }
   ]
 }

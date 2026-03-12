@@ -120,11 +120,49 @@ impl Pagination {
 }
 
 #[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+enum SortField {
+    #[default]
+    Id,
+    Title,
+    Pubdate,
+}
+
+impl SortField {
+    fn as_sql(&self) -> &'static str {
+        match self {
+            SortField::Id => "books.id",
+            SortField::Title => "books.title",
+            SortField::Pubdate => "books.pubdate",
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+enum SortDir {
+    #[default]
+    Asc,
+    Desc,
+}
+
+impl SortDir {
+    fn as_sql(&self) -> &'static str {
+        match self {
+            SortDir::Asc => "ASC",
+            SortDir::Desc => "DESC",
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Default)]
 struct BooksQuery {
     author_id: Option<i64>,
     series_id: Option<i64>,
     tag_id: Option<i64>,
     q: Option<String>,
+    sort: Option<SortField>,
+    sort_dir: Option<SortDir>,
     limit: Option<i64>,
     offset: Option<i64>,
 }
@@ -137,15 +175,6 @@ impl BooksQuery {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 struct ApiResponse<T> {
     data: T,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(rename_all = "snake_case")]
-enum CDBStruct {
-    Author(Author),
-    Book(Book),
-    Series(Series),
-    Tag(Tag),
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
@@ -244,8 +273,7 @@ async fn get_authors(
     .fetch_all(&app_state.db)
     .await?;
 
-    let data = recs.into_iter().map(CDBStruct::Author).collect();
-    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
+    Ok(Json(ApiResponse { data: recs }).into_response())
 }
 
 async fn get_author_by_id(
@@ -259,7 +287,7 @@ async fn get_author_by_id(
             .await?;
 
     match rec {
-        Some(author) => Ok(Json(ApiResponse { data: CDBStruct::Author(author) }).into_response()),
+        Some(author) => Ok(Json(ApiResponse { data: author }).into_response()),
         None => Err(AppError::NotFound),
     }
 }
@@ -318,12 +346,24 @@ async fn get_books(
 
     if let Some(ref q) = query.q {
         qb.push(if has_where { " AND " } else { " WHERE " });
-        qb.push("books.title LIKE '%' || ").push_bind(q).push(" || '%'");
+        // Match title or any of the book's authors by name
+        qb.push("(books.title LIKE '%' || ").push_bind(q).push(" || '%'");
+        qb.push(" OR books.id IN (SELECT bal.book FROM books_authors_link bal JOIN authors a ON bal.author = a.id WHERE a.name LIKE '%' || ")
+            .push_bind(q)
+            .push(" || '%'))");
         has_where = true;
     }
 
     let _ = has_where; // all filters applied
-    qb.push(" ORDER BY books.id LIMIT ").push_bind(query.limit());
+
+    let sort_field = query.sort.as_ref().unwrap_or(&SortField::Id);
+    let sort_dir = query.sort_dir.as_ref().unwrap_or(&SortDir::Asc);
+    qb.push(format!(
+        " ORDER BY {} {}",
+        sort_field.as_sql(),
+        sort_dir.as_sql()
+    ));
+    qb.push(" LIMIT ").push_bind(query.limit());
     qb.push(" OFFSET ").push_bind(query.offset());
 
     let rows = qb
@@ -336,8 +376,7 @@ async fn get_books(
         .map(Book::try_from)
         .collect::<Result<Vec<_>, _>>()?;
 
-    let data = books.into_iter().map(CDBStruct::Book).collect();
-    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
+    Ok(Json(ApiResponse { data: books }).into_response())
 }
 
 async fn get_book_by_id(
@@ -355,7 +394,7 @@ async fn get_book_by_id(
     match row {
         Some(row) => {
             let book = Book::try_from(row)?;
-            Ok(Json(ApiResponse { data: CDBStruct::Book(book) }).into_response())
+            Ok(Json(ApiResponse { data: book }).into_response())
         }
         None => Err(AppError::NotFound),
     }
@@ -373,8 +412,7 @@ async fn get_series(
     .fetch_all(&app_state.db)
     .await?;
 
-    let data = recs.into_iter().map(CDBStruct::Series).collect();
-    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
+    Ok(Json(ApiResponse { data: recs }).into_response())
 }
 
 async fn get_series_by_id(
@@ -387,7 +425,7 @@ async fn get_series_by_id(
         .await?;
 
     match rec {
-        Some(s) => Ok(Json(ApiResponse { data: CDBStruct::Series(s) }).into_response()),
+        Some(s) => Ok(Json(ApiResponse { data: s }).into_response()),
         None => Err(AppError::NotFound),
     }
 }
@@ -404,8 +442,7 @@ async fn get_tags(
     .fetch_all(&app_state.db)
     .await?;
 
-    let data = recs.into_iter().map(CDBStruct::Tag).collect();
-    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
+    Ok(Json(ApiResponse { data: recs }).into_response())
 }
 
 async fn get_tag_by_id(
@@ -418,7 +455,7 @@ async fn get_tag_by_id(
         .await?;
 
     match rec {
-        Some(tag) => Ok(Json(ApiResponse { data: CDBStruct::Tag(tag) }).into_response()),
+        Some(tag) => Ok(Json(ApiResponse { data: tag }).into_response()),
         None => Err(AppError::NotFound),
     }
 }
@@ -578,7 +615,8 @@ mod tests {
         sqlx::query("INSERT INTO authors VALUES (2, 'Isaac Asimov', 'Asimov, Isaac', '')")
             .execute(&pool).await.unwrap();
 
-        // Books
+        // Books: id=1 pubdate=1969, id=2 pubdate=1951
+        // Alphabetically: Foundation < The Left Hand of Darkness
         sqlx::query("INSERT INTO books VALUES (1, 'The Left Hand of Darkness', '1969-03-01 00:00:00', 4.0)")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO books VALUES (2, 'Foundation', '1951-01-01 00:00:00', 1.0)")
@@ -650,7 +688,7 @@ mod tests {
         let resp = app.oneshot(req("/v1/authors/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        assert_eq!(body["data"]["author"]["name"], "Ursula K. Le Guin");
+        assert_eq!(body["data"]["name"], "Ursula K. Le Guin");
     }
 
     #[tokio::test]
@@ -678,7 +716,7 @@ mod tests {
         let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        let authors = body["data"]["book"]["authors"].as_array().unwrap();
+        let authors = body["data"]["authors"].as_array().unwrap();
         assert_eq!(authors.len(), 2);
     }
 
@@ -688,20 +726,20 @@ mod tests {
         let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        let tags = body["data"]["book"]["tags"].as_array().unwrap();
+        let tags = body["data"]["tags"].as_array().unwrap();
         assert_eq!(tags.len(), 2);
     }
 
     #[tokio::test]
     async fn books_filter_by_author() {
         let app = build_app(test_pool().await);
-        // Author 2 (Asimov) wrote both books in fixture; author 1 (Le Guin) wrote only book 1
+        // Author 1 (Le Guin) wrote only book 1
         let resp = app.oneshot(req("/v1/books?author_id=1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
-        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+        assert_eq!(data[0]["title"], "The Left Hand of Darkness");
     }
 
     #[tokio::test]
@@ -712,7 +750,7 @@ mod tests {
         let body = json(resp.into_body()).await;
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
-        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+        assert_eq!(data[0]["title"], "The Left Hand of Darkness");
     }
 
     #[tokio::test]
@@ -724,7 +762,7 @@ mod tests {
         let body = json(resp.into_body()).await;
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
-        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+        assert_eq!(data[0]["title"], "The Left Hand of Darkness");
 
         // tag 2 = Science Fiction, both books have it
         let app = build_app(test_pool().await);
@@ -734,14 +772,71 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn books_filter_by_title() {
+    async fn books_search_by_title() {
         let app = build_app(test_pool().await);
         let resp = app.oneshot(req("/v1/books?q=foundation")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
-        assert_eq!(data[0]["book"]["title"], "Foundation");
+        assert_eq!(data[0]["title"], "Foundation");
+    }
+
+    #[tokio::test]
+    async fn books_search_by_author_name() {
+        let app = build_app(test_pool().await);
+        // "Le Guin" matches author 1, who wrote only book 1
+        let resp = app.oneshot(req("/v1/books?q=Le+Guin")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0]["title"], "The Left Hand of Darkness");
+    }
+
+    #[tokio::test]
+    async fn books_search_matches_both_title_and_author() {
+        let app = build_app(test_pool().await);
+        // "Asimov" matches author 2, who wrote both books
+        let resp = app.oneshot(req("/v1/books?q=Asimov")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn books_sort_by_title() {
+        let app = build_app(test_pool().await);
+        // Alphabetically: Foundation (id=2) < The Left Hand of Darkness (id=1)
+        let resp = app.oneshot(req("/v1/books?sort=title")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data[0]["title"], "Foundation");
+        assert_eq!(data[1]["title"], "The Left Hand of Darkness");
+    }
+
+    #[tokio::test]
+    async fn books_sort_by_title_desc() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?sort=title&sort_dir=desc")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data[0]["title"], "The Left Hand of Darkness");
+        assert_eq!(data[1]["title"], "Foundation");
+    }
+
+    #[tokio::test]
+    async fn books_sort_by_pubdate() {
+        let app = build_app(test_pool().await);
+        // pubdate asc: Foundation 1951 (id=2) < Left Hand 1969 (id=1)
+        let resp = app.oneshot(req("/v1/books?sort=pubdate")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data[0]["title"], "Foundation");
+        assert_eq!(data[1]["title"], "The Left Hand of Darkness");
     }
 
     #[tokio::test]
@@ -759,7 +854,7 @@ mod tests {
         let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        assert_eq!(body["data"]["book"]["title"], "The Left Hand of Darkness");
+        assert_eq!(body["data"]["title"], "The Left Hand of Darkness");
     }
 
     #[tokio::test]
@@ -786,7 +881,7 @@ mod tests {
         let resp = app.oneshot(req("/v1/series/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        assert_eq!(body["data"]["series"]["name"], "Hainish Cycle");
+        assert_eq!(body["data"]["name"], "Hainish Cycle");
     }
 
     #[tokio::test]
@@ -807,7 +902,7 @@ mod tests {
         // Tags are ordered by name: Fantasy, Science Fiction
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 2);
-        assert_eq!(data[0]["tag"]["name"], "Fantasy");
+        assert_eq!(data[0]["name"], "Fantasy");
     }
 
     #[tokio::test]
@@ -816,7 +911,7 @@ mod tests {
         let resp = app.oneshot(req("/v1/tags/1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
-        assert_eq!(body["data"]["tag"]["name"], "Fantasy");
+        assert_eq!(body["data"]["name"], "Fantasy");
     }
 
     #[tokio::test]
@@ -830,23 +925,20 @@ mod tests {
 
     #[tokio::test]
     async fn pagination_cap() {
-        // limit above MAX_LIMIT should be silently capped, not error
         let app = build_app(test_pool().await);
         let resp = app.oneshot(req("/v1/books?limit=999999")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
-        // fixture has 2 books; should still return both (cap > fixture size)
         let body = json(resp.into_body()).await;
         assert_eq!(body["data"].as_array().unwrap().len(), 2);
     }
 
     #[tokio::test]
     async fn books_ordered_consistently() {
-        // Two calls with the same query should return the same order
         let pool = test_pool().await;
         let app1 = build_app(pool.clone());
         let app2 = build_app(pool);
         let body1 = json(app1.oneshot(req("/v1/books")).await.unwrap().into_body()).await;
         let body2 = json(app2.oneshot(req("/v1/books")).await.unwrap().into_body()).await;
-        assert_eq!(body1["data"][0]["book"]["id"], body2["data"][0]["book"]["id"]);
+        assert_eq!(body1["data"][0]["id"], body2["data"][0]["id"]);
     }
 }
