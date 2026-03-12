@@ -77,6 +77,7 @@ Returns books. Supports filtering and pagination:
 |---|---|
 | `author_id` | Only books by this author ID |
 | `series_id` | Only books in this series ID |
+| `tag_id` | Only books with this tag ID |
 | `q` | Case-insensitive title search |
 | `limit` | Max results (default: 100) |
 | `offset` | Skip N results (default: 0) |

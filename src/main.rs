@@ -57,6 +57,7 @@ fn build_app(pool: SqlitePool) -> Router {
         .route("/v1/books", get(get_books))
         .route("/v1/books/{id}", get(get_book))
         .route("/v1/series", get(get_series))
+        .route("/v1/series/{id}", get(get_series_by_id))
         .route("/v1/tags", get(get_tags))
         .with_state(app_state)
         .layer(CookieManagerLayer::new())
@@ -124,6 +125,7 @@ impl ListQuery {
 struct BooksQuery {
     author_id: Option<i64>,
     series_id: Option<i64>,
+    tag_id: Option<i64>,
     q: Option<String>,
     limit: Option<i64>,
     offset: Option<i64>,
@@ -165,16 +167,67 @@ struct Author {
     link: String,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
+/// An author embedded in a Book response.
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct BookAuthor {
+    id: i64,
+    name: String,
+}
+
+/// Raw row returned from the database for a book query.
+/// `authors_json` and `tags_json` are JSON arrays produced by SQLite's
+/// json_group_array and need to be deserialized into the Book response type.
+#[derive(Debug, sqlx::FromRow)]
+struct BookRow {
+    id: i64,
+    title: String,
+    pubdate: Option<chrono::NaiveDateTime>,
+    authors_json: Option<String>,
+    tags_json: Option<String>,
+    isbn: Option<String>,
+    series_name: Option<String>,
+    series_index: Option<f64>,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Book {
     id: i64,
     title: String,
     pubdate: Option<chrono::NaiveDateTime>,
-    author_name: String,
-    author_id: i64,
+    authors: Vec<BookAuthor>,
+    tags: Vec<String>,
     isbn: Option<String>,
     series_name: Option<String>,
     series_index: Option<f64>,
+}
+
+impl TryFrom<BookRow> for Book {
+    type Error = serde_json::Error;
+
+    fn try_from(row: BookRow) -> Result<Self, Self::Error> {
+        let authors: Vec<BookAuthor> = row
+            .authors_json
+            .as_deref()
+            .map(serde_json::from_str)
+            .transpose()?
+            .unwrap_or_default();
+        let tags: Vec<String> = row
+            .tags_json
+            .as_deref()
+            .map(serde_json::from_str)
+            .transpose()?
+            .unwrap_or_default();
+        Ok(Book {
+            id: row.id,
+            title: row.title,
+            pubdate: row.pubdate,
+            authors,
+            tags,
+            isbn: row.isbn,
+            series_name: row.series_name,
+            series_index: row.series_index,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
@@ -225,15 +278,22 @@ async fn get_author(
     }
 }
 
+// Correlated subqueries for authors and tags avoid the cartesian-product
+// duplication that a JOIN would cause for books with multiple authors or tags.
 const BOOKS_BASE_QUERY: &str = "
     SELECT books.id as id, title, pubdate,
-           authors.name as author_name, authors.id as author_id,
+           (SELECT json_group_array(json_object('id', a.id, 'name', a.name))
+            FROM books_authors_link bal
+            JOIN authors a ON bal.author = a.id
+            WHERE bal.book = books.id) as authors_json,
+           (SELECT json_group_array(t.name)
+            FROM books_tags_link btl
+            JOIN tags t ON btl.tag = t.id
+            WHERE btl.book = books.id) as tags_json,
            i.val as isbn,
            s.name as series_name,
            books.series_index as series_index
     FROM books
-    JOIN books_authors_link bal ON bal.book = books.id
-    JOIN authors ON bal.author = authors.id
     LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'
     LEFT JOIN books_series_link bsl ON bsl.book = books.id
     LEFT JOIN series s ON s.id = bsl.series
@@ -248,13 +308,25 @@ async fn get_books(
 
     if let Some(author_id) = query.author_id {
         qb.push(if has_where { " AND " } else { " WHERE " });
-        qb.push("authors.id = ").push_bind(author_id);
+        qb.push("books.id IN (SELECT book FROM books_authors_link WHERE author = ")
+            .push_bind(author_id)
+            .push(")");
         has_where = true;
     }
 
     if let Some(series_id) = query.series_id {
         qb.push(if has_where { " AND " } else { " WHERE " });
-        qb.push("bsl.series = ").push_bind(series_id);
+        qb.push("books.id IN (SELECT book FROM books_series_link WHERE series = ")
+            .push_bind(series_id)
+            .push(")");
+        has_where = true;
+    }
+
+    if let Some(tag_id) = query.tag_id {
+        qb.push(if has_where { " AND " } else { " WHERE " });
+        qb.push("books.id IN (SELECT book FROM books_tags_link WHERE tag = ")
+            .push_bind(tag_id)
+            .push(")");
         has_where = true;
     }
 
@@ -266,12 +338,17 @@ async fn get_books(
     qb.push(" LIMIT ").push_bind(query.limit());
     qb.push(" OFFSET ").push_bind(query.offset());
 
-    let recs = qb
-        .build_query_as::<Book>()
+    let rows = qb
+        .build_query_as::<BookRow>()
         .fetch_all(&app_state.db)
         .await?;
 
-    let data = recs.into_iter().map(CDBStruct::Book).collect();
+    let books = rows
+        .into_iter()
+        .map(Book::try_from)
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let data = books.into_iter().map(CDBStruct::Book).collect();
     Ok(Json(V1APIResponse { data }).into_response())
 }
 
@@ -282,16 +359,19 @@ async fn get_book(
     let mut qb: sqlx::QueryBuilder<sqlx::Sqlite> = sqlx::QueryBuilder::new(BOOKS_BASE_QUERY);
     qb.push(" WHERE books.id = ").push_bind(id);
 
-    let rec = qb
-        .build_query_as::<Book>()
+    let row = qb
+        .build_query_as::<BookRow>()
         .fetch_optional(&app_state.db)
         .await?;
 
-    match rec {
-        Some(book) => Ok(Json(V1ItemResponse {
-            data: CDBStruct::Book(book),
-        })
-        .into_response()),
+    match row {
+        Some(row) => {
+            let book = Book::try_from(row)?;
+            Ok(Json(V1ItemResponse {
+                data: CDBStruct::Book(book),
+            })
+            .into_response())
+        }
         None => Err(AppError::NotFound),
     }
 }
@@ -310,6 +390,24 @@ async fn get_series(
 
     let data = recs.into_iter().map(CDBStruct::Series).collect();
     Ok(Json(V1APIResponse { data }).into_response())
+}
+
+async fn get_series_by_id(
+    State(app_state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<Response, AppError> {
+    let rec = sqlx::query_as::<_, Series>("SELECT id, name, sort FROM series WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&app_state.db)
+        .await?;
+
+    match rec {
+        Some(s) => Ok(Json(V1ItemResponse {
+            data: CDBStruct::Series(s),
+        })
+        .into_response()),
+        None => Err(AppError::NotFound),
+    }
 }
 
 async fn get_tags(
@@ -466,33 +564,59 @@ mod tests {
         .await
         .unwrap();
 
-        // Fixture data
+        sqlx::query(
+            "CREATE TABLE books_tags_link (
+                id   INTEGER PRIMARY KEY,
+                book INTEGER NOT NULL,
+                tag  INTEGER NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        // Authors
         sqlx::query("INSERT INTO authors VALUES (1, 'Ursula K. Le Guin', 'Le Guin, Ursula K.', '')")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO authors VALUES (2, 'Isaac Asimov', 'Asimov, Isaac', '')")
             .execute(&pool).await.unwrap();
 
+        // Books
         sqlx::query("INSERT INTO books VALUES (1, 'The Left Hand of Darkness', '1969-03-01 00:00:00', 4.0)")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO books VALUES (2, 'Foundation', '1951-01-01 00:00:00', 1.0)")
             .execute(&pool).await.unwrap();
 
+        // Book 1 has two authors to test multi-author deduplication
         sqlx::query("INSERT INTO books_authors_link (book, author) VALUES (1, 1)")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books_authors_link (book, author) VALUES (1, 2)")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO books_authors_link (book, author) VALUES (2, 2)")
             .execute(&pool).await.unwrap();
 
+        // Series
         sqlx::query("INSERT INTO series VALUES (1, 'Hainish Cycle', 'Hainish Cycle')")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO books_series_link (book, series) VALUES (1, 1)")
             .execute(&pool).await.unwrap();
 
+        // Identifiers
         sqlx::query("INSERT INTO identifiers (book, type, val) VALUES (2, 'isbn', '9780553293357')")
             .execute(&pool).await.unwrap();
 
+        // Tags
         sqlx::query("INSERT INTO tags VALUES (1, 'Fantasy')")
             .execute(&pool).await.unwrap();
         sqlx::query("INSERT INTO tags VALUES (2, 'Science Fiction')")
+            .execute(&pool).await.unwrap();
+
+        // Book 1: Fantasy + Science Fiction; Book 2: Science Fiction only
+        sqlx::query("INSERT INTO books_tags_link (book, tag) VALUES (1, 1)")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books_tags_link (book, tag) VALUES (1, 2)")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books_tags_link (book, tag) VALUES (2, 2)")
             .execute(&pool).await.unwrap();
 
         pool
@@ -542,7 +666,8 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn books_list() {
+    async fn books_list_no_duplicates() {
+        // Book 1 has 2 authors — should appear once, not twice
         let app = build_app(test_pool().await);
         let resp = app.oneshot(req("/v1/books")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
@@ -551,14 +676,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn book_has_multiple_authors() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let authors = body["data"]["book"]["authors"].as_array().unwrap();
+        assert_eq!(authors.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn book_has_tags() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let tags = body["data"]["book"]["tags"].as_array().unwrap();
+        assert_eq!(tags.len(), 2);
+    }
+
+    #[tokio::test]
     async fn books_filter_by_author() {
         let app = build_app(test_pool().await);
-        let resp = app.oneshot(req("/v1/books?author_id=2")).await.unwrap();
+        // Author 2 (Asimov) wrote both books in fixture; author 1 (Le Guin) wrote only book 1
+        let resp = app.oneshot(req("/v1/books?author_id=1")).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
-        assert_eq!(data[0]["book"]["title"], "Foundation");
+        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
     }
 
     #[tokio::test]
@@ -570,6 +716,24 @@ mod tests {
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 1);
         assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+    }
+
+    #[tokio::test]
+    async fn books_filter_by_tag() {
+        let app = build_app(test_pool().await);
+        // tag 1 = Fantasy, only book 1 has it
+        let resp = app.oneshot(req("/v1/books?tag_id=1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+
+        // tag 2 = Science Fiction, both books have it
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?tag_id=2")).await.unwrap();
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 2);
     }
 
     #[tokio::test]
@@ -617,6 +781,24 @@ mod tests {
         assert_eq!(resp.status(), StatusCode::OK);
         let body = json(resp.into_body()).await;
         assert_eq!(body["data"].as_array().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn series_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/series/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"]["series"]["name"], "Hainish Cycle");
+    }
+
+    #[tokio::test]
+    async fn series_not_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/series/99999")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["error"], "not_found");
     }
 
     #[tokio::test]
