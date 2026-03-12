@@ -29,14 +29,6 @@ The server listens on `127.0.0.1:3002` by default.
 | `--log-level` | `DEBUG` | Log verbosity (`TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`) |
 | `--log-json` | off | Emit logs as JSON (useful for log aggregation) |
 
-### Docker
-
-```sh
-docker run -v /path/to/metadata.db:/data/metadata.db \
-  -e CMA_DATABASE_URL=/data/metadata.db \
-  ghcr.io/alevtina/calibre-metadata-api
-```
-
 ## API
 
 All responses have the shape `{ "data": [...] }` for lists or `{ "data": {...} }` for single items.
