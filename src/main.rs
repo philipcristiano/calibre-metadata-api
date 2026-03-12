@@ -38,12 +38,6 @@ struct AppState {
     db: SqlitePool,
 }
 
-impl AppState {
-    fn from_config(_config: AppConfig, db: SqlitePool) -> Self {
-        AppState { db }
-    }
-}
-
 fn read_app_config(path: &str) -> anyhow::Result<AppConfig> {
     use std::fs;
     let contents = fs::read_to_string(path)
@@ -51,6 +45,23 @@ fn read_app_config(path: &str) -> anyhow::Result<AppConfig> {
     let config = toml::from_str(&contents)
         .map_err(|e| anyhow::anyhow!("Problems parsing config file: {}", e))?;
     Ok(config)
+}
+
+fn build_app(pool: SqlitePool) -> Router {
+    let app_state = AppState { db: pool };
+    Router::new()
+        .route("/", get(root))
+        .route("/_health", get(health))
+        .route("/v1/authors", get(get_authors))
+        .route("/v1/authors/{id}", get(get_author))
+        .route("/v1/books", get(get_books))
+        .route("/v1/books/{id}", get(get_book))
+        .route("/v1/series", get(get_series))
+        .route("/v1/tags", get(get_tags))
+        .with_state(app_state)
+        .layer(CookieManagerLayer::new())
+        .layer(tower_http::compression::CompressionLayer::new())
+        .layer(CorsLayer::permissive())
 }
 
 #[tokio::main]
@@ -65,24 +76,9 @@ async fn main() -> anyhow::Result<()> {
         .await
         .map_err(|e| anyhow::anyhow!("Cannot connect to database: {}", e))?;
 
-    let app_state = AppState::from_config(app_config, pool);
-
-    let app = Router::new()
-        .route("/", get(root))
-        .route("/_health", get(health))
-        .route("/v1/authors", get(get_authors))
-        .route("/v1/authors/{id}", get(get_author))
-        .route("/v1/books", get(get_books))
-        .route("/v1/books/{id}", get(get_book))
-        .route("/v1/series", get(get_series))
-        .route("/v1/tags", get(get_tags))
-        .with_state(app_state)
-        .layer(CookieManagerLayer::new())
-        .layer(tower_http::compression::CompressionLayer::new())
-        .layer(CorsLayer::permissive())
-        .layer(service_conventions::tracing_http::trace_layer(
-            tracing::Level::INFO,
-        ));
+    let app = build_app(pool).layer(service_conventions::tracing_http::trace_layer(
+        tracing::Level::INFO,
+    ));
 
     let addr: SocketAddr = args
         .bind_addr
@@ -376,5 +372,262 @@ where
 {
     fn from(err: E) -> Self {
         Self::Internal(err.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::{
+        body::{Body, to_bytes},
+        http::{Request, StatusCode},
+    };
+    use tower::ServiceExt;
+
+    async fn test_pool() -> SqlitePool {
+        let pool = SqlitePool::connect("sqlite::memory:").await.unwrap();
+
+        sqlx::query(
+            "CREATE TABLE authors (
+                id   INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                sort TEXT,
+                link TEXT NOT NULL DEFAULT ''
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE books (
+                id           INTEGER PRIMARY KEY,
+                title        TEXT NOT NULL,
+                pubdate      DATETIME,
+                series_index REAL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE books_authors_link (
+                id     INTEGER PRIMARY KEY,
+                book   INTEGER NOT NULL,
+                author INTEGER NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE identifiers (
+                id   INTEGER PRIMARY KEY,
+                book INTEGER NOT NULL,
+                type TEXT NOT NULL,
+                val  TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE series (
+                id   INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                sort TEXT
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE books_series_link (
+                id     INTEGER PRIMARY KEY,
+                book   INTEGER NOT NULL,
+                series INTEGER NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        sqlx::query(
+            "CREATE TABLE tags (
+                id   INTEGER PRIMARY KEY,
+                name TEXT NOT NULL
+            )",
+        )
+        .execute(&pool)
+        .await
+        .unwrap();
+
+        // Fixture data
+        sqlx::query("INSERT INTO authors VALUES (1, 'Ursula K. Le Guin', 'Le Guin, Ursula K.', '')")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO authors VALUES (2, 'Isaac Asimov', 'Asimov, Isaac', '')")
+            .execute(&pool).await.unwrap();
+
+        sqlx::query("INSERT INTO books VALUES (1, 'The Left Hand of Darkness', '1969-03-01 00:00:00', 4.0)")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books VALUES (2, 'Foundation', '1951-01-01 00:00:00', 1.0)")
+            .execute(&pool).await.unwrap();
+
+        sqlx::query("INSERT INTO books_authors_link (book, author) VALUES (1, 1)")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books_authors_link (book, author) VALUES (2, 2)")
+            .execute(&pool).await.unwrap();
+
+        sqlx::query("INSERT INTO series VALUES (1, 'Hainish Cycle', 'Hainish Cycle')")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO books_series_link (book, series) VALUES (1, 1)")
+            .execute(&pool).await.unwrap();
+
+        sqlx::query("INSERT INTO identifiers (book, type, val) VALUES (2, 'isbn', '9780553293357')")
+            .execute(&pool).await.unwrap();
+
+        sqlx::query("INSERT INTO tags VALUES (1, 'Fantasy')")
+            .execute(&pool).await.unwrap();
+        sqlx::query("INSERT INTO tags VALUES (2, 'Science Fiction')")
+            .execute(&pool).await.unwrap();
+
+        pool
+    }
+
+    fn req(uri: &str) -> Request<Body> {
+        Request::builder().uri(uri).body(Body::empty()).unwrap()
+    }
+
+    async fn json(body: Body) -> serde_json::Value {
+        let bytes = to_bytes(body, usize::MAX).await.unwrap();
+        serde_json::from_slice(&bytes).unwrap()
+    }
+
+    #[tokio::test]
+    async fn health_ok() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/_health")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+    }
+
+    #[tokio::test]
+    async fn authors_list() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/authors")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn author_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/authors/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"]["author"]["name"], "Ursula K. Le Guin");
+    }
+
+    #[tokio::test]
+    async fn author_not_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/authors/99999")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["error"], "not_found");
+    }
+
+    #[tokio::test]
+    async fn books_list() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn books_filter_by_author() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?author_id=2")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0]["book"]["title"], "Foundation");
+    }
+
+    #[tokio::test]
+    async fn books_filter_by_series() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?series_id=1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0]["book"]["title"], "The Left Hand of Darkness");
+    }
+
+    #[tokio::test]
+    async fn books_filter_by_title() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?q=foundation")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 1);
+        assert_eq!(data[0]["book"]["title"], "Foundation");
+    }
+
+    #[tokio::test]
+    async fn books_pagination() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?limit=1&offset=0")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn book_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"]["book"]["title"], "The Left Hand of Darkness");
+    }
+
+    #[tokio::test]
+    async fn book_not_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books/99999")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["error"], "not_found");
+    }
+
+    #[tokio::test]
+    async fn series_list() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/series")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 1);
+    }
+
+    #[tokio::test]
+    async fn tags_list() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/tags")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        // Tags are ordered by name: Fantasy, Science Fiction
+        let data = body["data"].as_array().unwrap();
+        assert_eq!(data.len(), 2);
+        assert_eq!(data[0]["tag"]["name"], "Fantasy");
     }
 }

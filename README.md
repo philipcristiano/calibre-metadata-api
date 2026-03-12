@@ -130,4 +130,7 @@ cp ~/path/to/Calibre\ Library/metadata.db .
 
 # Run with auto-reload (requires cargo-watch)
 cargo watch -x run
+
+# Run tests (no database file needed — tests use an in-memory SQLite fixture)
+cargo test
 ```
