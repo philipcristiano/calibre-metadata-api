@@ -14,6 +14,7 @@ use axum_extra::extract::Query;
 use std::net::SocketAddr;
 
 use tower_cookies::CookieManagerLayer;
+use tower_http::cors::CorsLayer;
 
 #[derive(Parser, Debug)]
 pub struct Args {
@@ -78,6 +79,7 @@ async fn main() -> anyhow::Result<()> {
         .with_state(app_state)
         .layer(CookieManagerLayer::new())
         .layer(tower_http::compression::CompressionLayer::new())
+        .layer(CorsLayer::permissive())
         .layer(service_conventions::tracing_http::trace_layer(
             tracing::Level::INFO,
         ));
@@ -223,7 +225,7 @@ async fn get_author(
             data: CDBStruct::Author(author),
         })
         .into_response()),
-        None => Ok(StatusCode::NOT_FOUND.into_response()),
+        None => Err(AppError::NotFound),
     }
 }
 
@@ -294,7 +296,7 @@ async fn get_book(
             data: CDBStruct::Book(book),
         })
         .into_response()),
-        None => Ok(StatusCode::NOT_FOUND.into_response()),
+        None => Err(AppError::NotFound),
     }
 }
 
@@ -330,29 +332,49 @@ async fn get_tags(
     Ok(Json(V1APIResponse { data }).into_response())
 }
 
-// Make our own error that wraps `anyhow::Error`.
-#[derive(Debug)]
-struct AppError(anyhow::Error);
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum ErrorKind {
+    NotFound,
+    InternalError,
+}
 
-// Tell axum how to convert `AppError` into a response.
+#[derive(Debug, Serialize)]
+struct ErrorBody {
+    error: ErrorKind,
+}
+
+#[derive(Debug)]
+enum AppError {
+    NotFound,
+    Internal(anyhow::Error),
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        tracing::error!("HTTP Error {:?}", &self);
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Something went wrong: {}", self.0),
-        )
-            .into_response()
+        match self {
+            AppError::NotFound => (
+                StatusCode::NOT_FOUND,
+                Json(ErrorBody { error: ErrorKind::NotFound }),
+            )
+                .into_response(),
+            AppError::Internal(e) => {
+                tracing::error!("Internal error: {:?}", e);
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ErrorBody { error: ErrorKind::InternalError }),
+                )
+                    .into_response()
+            }
+        }
     }
 }
 
-// This enables using `?` on functions that return `Result<_, anyhow::Error>` to turn them into
-// `Result<_, AppError>`. That way you don't need to do that manually.
 impl<E> From<E> for AppError
 where
     E: Into<anyhow::Error>,
 {
     fn from(err: E) -> Self {
-        Self(err.into())
+        Self::Internal(err.into())
     }
 }
