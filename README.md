@@ -86,6 +86,9 @@ Returns books. Supports filtering and pagination:
 # Books by author 3, page 2
 GET /v1/books?author_id=3&limit=20&offset=20
 
+# Books with a specific tag
+GET /v1/books?tag_id=7
+
 # Title search
 GET /v1/books?q=foundation
 ```
@@ -98,8 +101,8 @@ GET /v1/books?q=foundation
         "id": 42,
         "title": "The Left Hand of Darkness",
         "pubdate": "1969-03-01T00:00:00",
-        "author_name": "Ursula K. Le Guin",
-        "author_id": 1,
+        "authors": [{ "id": 1, "name": "Ursula K. Le Guin" }],
+        "tags": ["Science Fiction", "Fantasy"],
         "isbn": "9780441478125",
         "series_name": "Hainish Cycle",
         "series_index": 4.0
@@ -118,6 +121,10 @@ Returns a single book by ID, or `404` if not found.
 #### `GET /v1/series`
 
 Returns all series, ordered by sort name. Supports `?limit=` and `?offset=`.
+
+#### `GET /v1/series/{id}`
+
+Returns a single series by ID, or `404` if not found.
 
 #### `GET /v1/tags`
 
