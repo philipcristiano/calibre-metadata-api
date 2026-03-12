@@ -13,7 +13,6 @@ use axum::{
 use axum_extra::extract::Query;
 use std::net::SocketAddr;
 
-use tower_cookies::CookieManagerLayer;
 use tower_http::cors::CorsLayer;
 
 #[derive(Parser, Debug)]
@@ -50,7 +49,6 @@ fn read_app_config(path: &str) -> anyhow::Result<AppConfig> {
 fn build_app(pool: SqlitePool) -> Router {
     let app_state = AppState { db: pool };
     Router::new()
-        .route("/", get(root))
         .route("/_health", get(health))
         .route("/v1/authors", get(get_authors))
         .route("/v1/authors/{id}", get(get_author))
@@ -59,8 +57,8 @@ fn build_app(pool: SqlitePool) -> Router {
         .route("/v1/series", get(get_series))
         .route("/v1/series/{id}", get(get_series_by_id))
         .route("/v1/tags", get(get_tags))
+        .route("/v1/tags/{id}", get(get_tag_by_id))
         .with_state(app_state)
-        .layer(CookieManagerLayer::new())
         .layer(tower_http::compression::CompressionLayer::new())
         .layer(CorsLayer::permissive())
 }
@@ -102,9 +100,7 @@ async fn health(State(app_state): State<AppState>) -> Response {
     }
 }
 
-async fn root() -> Response {
-    "Hello World".into_response()
-}
+const MAX_LIMIT: i64 = 1000;
 
 #[derive(Debug, Deserialize, Default)]
 struct ListQuery {
@@ -114,10 +110,10 @@ struct ListQuery {
 
 impl ListQuery {
     fn limit(&self) -> i64 {
-        self.limit.unwrap_or(100)
+        self.limit.unwrap_or(100).min(MAX_LIMIT).max(0)
     }
     fn offset(&self) -> i64 {
-        self.offset.unwrap_or(0)
+        self.offset.unwrap_or(0).max(0)
     }
 }
 
@@ -133,10 +129,10 @@ struct BooksQuery {
 
 impl BooksQuery {
     fn limit(&self) -> i64 {
-        self.limit.unwrap_or(100)
+        self.limit.unwrap_or(100).min(MAX_LIMIT).max(0)
     }
     fn offset(&self) -> i64 {
-        self.offset.unwrap_or(0)
+        self.offset.unwrap_or(0).max(0)
     }
 }
 
@@ -335,7 +331,7 @@ async fn get_books(
         qb.push("books.title LIKE '%' || ").push_bind(q).push(" || '%'");
     }
 
-    qb.push(" LIMIT ").push_bind(query.limit());
+    qb.push(" ORDER BY books.id LIMIT ").push_bind(query.limit());
     qb.push(" OFFSET ").push_bind(query.offset());
 
     let rows = qb
@@ -424,6 +420,24 @@ async fn get_tags(
 
     let data = recs.into_iter().map(CDBStruct::Tag).collect();
     Ok(Json(V1APIResponse { data }).into_response())
+}
+
+async fn get_tag_by_id(
+    State(app_state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<Response, AppError> {
+    let rec = sqlx::query_as::<_, Tag>("SELECT id, name FROM tags WHERE id = ?")
+        .bind(id)
+        .fetch_optional(&app_state.db)
+        .await?;
+
+    match rec {
+        Some(tag) => Ok(Json(V1ItemResponse {
+            data: CDBStruct::Tag(tag),
+        })
+        .into_response()),
+        None => Err(AppError::NotFound),
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -811,5 +825,45 @@ mod tests {
         let data = body["data"].as_array().unwrap();
         assert_eq!(data.len(), 2);
         assert_eq!(data[0]["tag"]["name"], "Fantasy");
+    }
+
+    #[tokio::test]
+    async fn tag_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/tags/1")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"]["tag"]["name"], "Fantasy");
+    }
+
+    #[tokio::test]
+    async fn tag_not_found() {
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/tags/99999")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::NOT_FOUND);
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["error"], "not_found");
+    }
+
+    #[tokio::test]
+    async fn pagination_cap() {
+        // limit above MAX_LIMIT should be silently capped, not error
+        let app = build_app(test_pool().await);
+        let resp = app.oneshot(req("/v1/books?limit=999999")).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        // fixture has 2 books; should still return both (cap > fixture size)
+        let body = json(resp.into_body()).await;
+        assert_eq!(body["data"].as_array().unwrap().len(), 2);
+    }
+
+    #[tokio::test]
+    async fn books_ordered_consistently() {
+        // Two calls with the same query should return the same order
+        let pool = test_pool().await;
+        let app1 = build_app(pool.clone());
+        let app2 = build_app(pool);
+        let body1 = json(app1.oneshot(req("/v1/books")).await.unwrap().into_body()).await;
+        let body2 = json(app2.oneshot(req("/v1/books")).await.unwrap().into_body()).await;
+        assert_eq!(body1["data"][0]["book"]["id"], body2["data"][0]["book"]["id"]);
     }
 }

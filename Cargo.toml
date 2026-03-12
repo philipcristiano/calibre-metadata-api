@@ -29,10 +29,9 @@ service_conventions = { version = "0.0.32", features = ["tracing", "oidc"]}
 sqlx = { version = "0.8.6", features = ["runtime-tokio", "tls-rustls", "sqlite", "macros", "chrono"] }
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "0.9.0"
-tower-http = { version = "0.6.0", features = ["tracing", "trace", "cors"] }
+tower-http = { version = "0.6.0", features = ["tracing", "trace", "cors", "compression-full"] }
 tracing = "0.1.40"
 
-tower-cookies = { version = "0.11.0", features = ["signed", "private"]}
 axum-extra = { version = "0.12.0", features = ["form", "query"] }
 
 [dev-dependencies]

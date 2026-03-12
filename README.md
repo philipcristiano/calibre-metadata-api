@@ -42,7 +42,7 @@ Errors return JSON with an `error` field:
 
 CORS is enabled for all origins, so the API can be called directly from browser-based clients.
 
-List endpoints accept `?limit=N&offset=N` for pagination (default limit: 100).
+List endpoints accept `?limit=N&offset=N` for pagination (default limit: 100, max: 1000).
 
 ### Endpoints
 
@@ -79,7 +79,7 @@ Returns books. Supports filtering and pagination:
 | `series_id` | Only books in this series ID |
 | `tag_id` | Only books with this tag ID |
 | `q` | Case-insensitive title search |
-| `limit` | Max results (default: 100) |
+| `limit` | Max results (default: 100, max: 1000) |
 | `offset` | Skip N results (default: 0) |
 
 ```sh
@@ -129,6 +129,10 @@ Returns a single series by ID, or `404` if not found.
 #### `GET /v1/tags`
 
 Returns all tags, ordered by name. Supports `?limit=` and `?offset=`.
+
+#### `GET /v1/tags/{id}`
+
+Returns a single tag by ID, or `404` if not found.
 
 ## Dev
 
