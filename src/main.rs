@@ -356,13 +356,10 @@ async fn get_books(
 
     let _ = has_where; // all filters applied
 
-    let sort_field = query.sort.as_ref().unwrap_or(&SortField::Id);
-    let sort_dir = query.sort_dir.as_ref().unwrap_or(&SortDir::Asc);
-    qb.push(format!(
-        " ORDER BY {} {}",
-        sort_field.as_sql(),
-        sort_dir.as_sql()
-    ));
+    qb.push(" ORDER BY ")
+        .push(query.sort.as_ref().map_or("books.id", SortField::as_sql))
+        .push(" ")
+        .push(query.sort_dir.as_ref().map_or("ASC", SortDir::as_sql));
     qb.push(" LIMIT ").push_bind(query.limit());
     qb.push(" OFFSET ").push_bind(query.offset());
 
