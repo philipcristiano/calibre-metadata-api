@@ -5,7 +5,7 @@ use sqlx::sqlite::SqlitePool;
 
 use axum::{
     Json, Router,
-    extract::{FromRef, Path, State},
+    extract::{Path, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::get,
@@ -23,8 +23,6 @@ pub struct Args {
     config_file: String,
     #[arg(short, long, value_enum, default_value = "DEBUG")]
     log_level: tracing::Level,
-    #[arg(long, action)]
-    log_json: bool,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -32,7 +30,7 @@ struct AppConfig {
     database_url: String,
 }
 
-#[derive(FromRef, Clone, Debug)]
+#[derive(Clone, Debug)]
 struct AppState {
     db: SqlitePool,
 }
@@ -51,9 +49,9 @@ fn build_app(pool: SqlitePool) -> Router {
     Router::new()
         .route("/_health", get(health))
         .route("/v1/authors", get(get_authors))
-        .route("/v1/authors/{id}", get(get_author))
+        .route("/v1/authors/{id}", get(get_author_by_id))
         .route("/v1/books", get(get_books))
-        .route("/v1/books/{id}", get(get_book))
+        .route("/v1/books/{id}", get(get_book_by_id))
         .route("/v1/series", get(get_series))
         .route("/v1/series/{id}", get(get_series_by_id))
         .route("/v1/tags", get(get_tags))
@@ -102,19 +100,23 @@ async fn health(State(app_state): State<AppState>) -> Response {
 
 const MAX_LIMIT: i64 = 1000;
 
+fn clamp_limit(v: Option<i64>) -> i64 {
+    v.unwrap_or(100).min(MAX_LIMIT).max(0)
+}
+
+fn clamp_offset(v: Option<i64>) -> i64 {
+    v.unwrap_or(0).max(0)
+}
+
 #[derive(Debug, Deserialize, Default)]
-struct ListQuery {
+struct Pagination {
     limit: Option<i64>,
     offset: Option<i64>,
 }
 
-impl ListQuery {
-    fn limit(&self) -> i64 {
-        self.limit.unwrap_or(100).min(MAX_LIMIT).max(0)
-    }
-    fn offset(&self) -> i64 {
-        self.offset.unwrap_or(0).max(0)
-    }
+impl Pagination {
+    fn limit(&self) -> i64 { clamp_limit(self.limit) }
+    fn offset(&self) -> i64 { clamp_offset(self.offset) }
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -128,22 +130,13 @@ struct BooksQuery {
 }
 
 impl BooksQuery {
-    fn limit(&self) -> i64 {
-        self.limit.unwrap_or(100).min(MAX_LIMIT).max(0)
-    }
-    fn offset(&self) -> i64 {
-        self.offset.unwrap_or(0).max(0)
-    }
+    fn limit(&self) -> i64 { clamp_limit(self.limit) }
+    fn offset(&self) -> i64 { clamp_offset(self.offset) }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
-struct V1APIResponse {
-    data: Vec<CDBStruct>,
-}
-
-#[derive(Debug, Clone, Deserialize, Serialize)]
-struct V1ItemResponse {
-    data: CDBStruct,
+struct ApiResponse<T> {
+    data: T,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -241,7 +234,7 @@ struct Tag {
 
 async fn get_authors(
     State(app_state): State<AppState>,
-    Query(query): Query<ListQuery>,
+    Query(query): Query<Pagination>,
 ) -> Result<Response, AppError> {
     let recs = sqlx::query_as::<_, Author>(
         "SELECT id, name, sort, link FROM authors ORDER BY sort LIMIT ? OFFSET ?",
@@ -252,10 +245,10 @@ async fn get_authors(
     .await?;
 
     let data = recs.into_iter().map(CDBStruct::Author).collect();
-    Ok(Json(V1APIResponse { data }).into_response())
+    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
 }
 
-async fn get_author(
+async fn get_author_by_id(
     State(app_state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Response, AppError> {
@@ -266,10 +259,7 @@ async fn get_author(
             .await?;
 
     match rec {
-        Some(author) => Ok(Json(V1ItemResponse {
-            data: CDBStruct::Author(author),
-        })
-        .into_response()),
+        Some(author) => Ok(Json(ApiResponse { data: CDBStruct::Author(author) }).into_response()),
         None => Err(AppError::NotFound),
     }
 }
@@ -329,8 +319,10 @@ async fn get_books(
     if let Some(ref q) = query.q {
         qb.push(if has_where { " AND " } else { " WHERE " });
         qb.push("books.title LIKE '%' || ").push_bind(q).push(" || '%'");
+        has_where = true;
     }
 
+    let _ = has_where; // all filters applied
     qb.push(" ORDER BY books.id LIMIT ").push_bind(query.limit());
     qb.push(" OFFSET ").push_bind(query.offset());
 
@@ -345,10 +337,10 @@ async fn get_books(
         .collect::<Result<Vec<_>, _>>()?;
 
     let data = books.into_iter().map(CDBStruct::Book).collect();
-    Ok(Json(V1APIResponse { data }).into_response())
+    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
 }
 
-async fn get_book(
+async fn get_book_by_id(
     State(app_state): State<AppState>,
     Path(id): Path<i64>,
 ) -> Result<Response, AppError> {
@@ -363,10 +355,7 @@ async fn get_book(
     match row {
         Some(row) => {
             let book = Book::try_from(row)?;
-            Ok(Json(V1ItemResponse {
-                data: CDBStruct::Book(book),
-            })
-            .into_response())
+            Ok(Json(ApiResponse { data: CDBStruct::Book(book) }).into_response())
         }
         None => Err(AppError::NotFound),
     }
@@ -374,7 +363,7 @@ async fn get_book(
 
 async fn get_series(
     State(app_state): State<AppState>,
-    Query(query): Query<ListQuery>,
+    Query(query): Query<Pagination>,
 ) -> Result<Response, AppError> {
     let recs = sqlx::query_as::<_, Series>(
         "SELECT id, name, sort FROM series ORDER BY sort LIMIT ? OFFSET ?",
@@ -385,7 +374,7 @@ async fn get_series(
     .await?;
 
     let data = recs.into_iter().map(CDBStruct::Series).collect();
-    Ok(Json(V1APIResponse { data }).into_response())
+    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
 }
 
 async fn get_series_by_id(
@@ -398,17 +387,14 @@ async fn get_series_by_id(
         .await?;
 
     match rec {
-        Some(s) => Ok(Json(V1ItemResponse {
-            data: CDBStruct::Series(s),
-        })
-        .into_response()),
+        Some(s) => Ok(Json(ApiResponse { data: CDBStruct::Series(s) }).into_response()),
         None => Err(AppError::NotFound),
     }
 }
 
 async fn get_tags(
     State(app_state): State<AppState>,
-    Query(query): Query<ListQuery>,
+    Query(query): Query<Pagination>,
 ) -> Result<Response, AppError> {
     let recs = sqlx::query_as::<_, Tag>(
         "SELECT id, name FROM tags ORDER BY name LIMIT ? OFFSET ?",
@@ -419,7 +405,7 @@ async fn get_tags(
     .await?;
 
     let data = recs.into_iter().map(CDBStruct::Tag).collect();
-    Ok(Json(V1APIResponse { data }).into_response())
+    Ok(Json(ApiResponse::<Vec<CDBStruct>> { data }).into_response())
 }
 
 async fn get_tag_by_id(
@@ -432,10 +418,7 @@ async fn get_tag_by_id(
         .await?;
 
     match rec {
-        Some(tag) => Ok(Json(V1ItemResponse {
-            data: CDBStruct::Tag(tag),
-        })
-        .into_response()),
+        Some(tag) => Ok(Json(ApiResponse { data: CDBStruct::Tag(tag) }).into_response()),
         None => Err(AppError::NotFound),
     }
 }

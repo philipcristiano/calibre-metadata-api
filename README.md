@@ -27,7 +27,6 @@ The server listens on `127.0.0.1:3002` by default.
 | `--bind-addr` | `127.0.0.1:3002` | Address and port to listen on |
 | `--config-file` | `cma.toml` | Path to config file |
 | `--log-level` | `DEBUG` | Log verbosity (`TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`) |
-| `--log-json` | off | Emit logs as JSON (useful for log aggregation) |
 
 ## API
 
