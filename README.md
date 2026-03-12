@@ -49,8 +49,6 @@ List endpoints accept `?limit=N&offset=N` for pagination (default limit: 100, ma
 #### `GET /_health`
 Returns `200 OK` if the server and database are healthy, `503` if the database is unreachable.
 
----
-
 #### `GET /v1/authors`
 
 Returns all authors. Supports `?limit=` and `?offset=`.
@@ -66,8 +64,6 @@ Returns all authors. Supports `?limit=` and `?offset=`.
 #### `GET /v1/authors/{id}`
 
 Returns a single author by ID, or `404` if not found.
-
----
 
 #### `GET /v1/books`
 
@@ -115,8 +111,6 @@ GET /v1/books?q=foundation
 #### `GET /v1/books/{id}`
 
 Returns a single book by ID, or `404` if not found.
-
----
 
 #### `GET /v1/series`
 
