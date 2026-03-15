@@ -125,6 +125,7 @@ struct Book {
     pubdate: Option<chrono::NaiveDateTime>,
     author_name: String,
     author_id: i64,
+    isbn: Option<String>,
 }
 
 async fn get_authors(State(app_state): State<AppState>) -> Result<Response, AppError> {
@@ -147,12 +148,18 @@ async fn get_books(State(app_state): State<AppState>) -> Result<Response, AppErr
     let recs = sqlx::query_as!(
         Book,
         r#"
-            SELECT books.id as id, title, pubdate, authors.name as author_name, authors.id as author_id
+            SELECT books.id as id,
+                   title, pubdate,
+                   authors.name as author_name,
+                   authors.id as author_id,
+                   i.val as isbn
             FROM books
             JOIN books_authors_link bal
                 ON bal.book = books.id
             JOIN authors
                 ON bal.author = authors.id
+            LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'
+
         "#
     )
     .fetch_all(&app_state.db)
