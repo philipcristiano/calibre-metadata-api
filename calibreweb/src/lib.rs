@@ -51,3 +51,40 @@ pub async fn get_shelves(app_state: &CWState) -> Result<Vec<Shelf>, anyhow::Erro
     .await?;
     Ok(recs)
 }
+// From calibre-web app.db schema
+// CREATE TABLE book_shelf_link (
+// 	id INTEGER NOT NULL,
+// 	book_id INTEGER,
+// 	"order" INTEGER,
+// 	shelf INTEGER,
+// 	date_added DATETIME,
+// 	PRIMARY KEY (id),
+// 	FOREIGN KEY(shelf) REFERENCES shelf (id)
+// );
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct BookShelfLink {
+    id: i64,
+    pub book_id: Option<i64>,
+}
+
+pub async fn get_shelf_book_ids(
+    app_state: &CWState,
+    shelf_id: i32,
+) -> Result<Vec<BookShelfLink>, anyhow::Error> {
+    let recs = sqlx::query_as!(
+        BookShelfLink,
+        r#"
+            SELECT id,
+               book_id
+            FROM book_shelf_link
+            WHERE
+                shelf = ?1
+
+        "#,
+        shelf_id
+    )
+    .fetch_all(&app_state.db)
+    .await?;
+    Ok(recs)
+}

@@ -89,6 +89,7 @@ async fn main() {
         .route("/v1/authors", get(get_authors))
         .route("/v1/books", get(get_books))
         .route("/v1/shelves", get(get_shelves))
+        .route("/v1/shelves/{shelf_id}/books", get(get_shelved_books))
         .with_state(app_state.clone())
         .layer(CookieManagerLayer::new())
         .layer(tower_http::compression::CompressionLayer::new())
@@ -191,6 +192,63 @@ async fn get_shelves(State(app_state): State<AppState>) -> Result<Response, AppE
         let shelves = calibreweb::get_shelves(&cwstate).await?;
 
         let cdbstruct = shelves.into_iter().map(CDBStruct::Shelf).collect();
+        let resp = V1APIResponse { data: cdbstruct };
+        Ok(Json(resp).into_response())
+    } else {
+        Ok((
+            StatusCode::SERVICE_UNAVAILABLE,
+            "Calibre web not configured",
+        )
+            .into_response())
+    }
+}
+
+#[derive(serde::Deserialize, Clone, Debug)]
+pub struct ShelfPath {
+    pub shelf_id: i32,
+}
+
+async fn get_shelved_books(
+    Path(params): Path<ShelfPath>,
+    State(app_state): State<AppState>,
+) -> Result<Response, AppError> {
+    if let Some(cwstate) = app_state.cwstate {
+        let book_shelf_links = calibreweb::get_shelf_book_ids(&cwstate, params.shelf_id).await?;
+        let book_ids: Vec<Option<i64>> = book_shelf_links
+            .into_iter()
+            .map(|bsl| bsl.book_id)
+            .collect();
+        // https://github.com/launchbadge/sqlx/issues/875
+        let mut books: Vec<Book> = Vec::new();
+        for maybe_book_id in book_ids {
+            if let Some(book_id) = maybe_book_id {
+                tracing::info!(book_id = book_id, "Finding book by id for shelf");
+                let book = sqlx::query_as!(
+                    Book,
+                    r#"
+                        SELECT books.id as id,
+                               title, pubdate,
+                               authors.name as author_name,
+                               authors.id as author_id,
+                               i.val as isbn
+                        FROM books
+                        JOIN books_authors_link bal
+                            ON bal.book = books.id
+                        JOIN authors
+                            ON bal.author = authors.id
+                        LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'
+                        WHERE books.id = ?1
+
+                    "#,
+                    book_id
+                )
+                .fetch_one(&app_state.db)
+                .await?;
+                books.push(book);
+            }
+        }
+
+        let cdbstruct = books.into_iter().map(CDBStruct::Book).collect();
         let resp = V1APIResponse { data: cdbstruct };
         Ok(Json(resp).into_response())
     } else {
