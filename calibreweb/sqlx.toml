@@ -1,0 +1,2 @@
+[common]
+database-url-var = "CALIBRE_WEB_DATABASE_URL"

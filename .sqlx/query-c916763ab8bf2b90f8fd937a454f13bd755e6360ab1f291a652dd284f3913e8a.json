@@ -1,0 +1,86 @@
+{
+  "db_name": "SQLite",
+  "query": "\n                        SELECT books.id as id,\n                               title, pubdate,\n                               authors.name as author_name,\n                               authors.id as author_id,\n                               i.val as isbn\n                        FROM books\n                        JOIN books_authors_link bal\n                            ON bal.book = books.id\n                        JOIN authors\n                            ON bal.author = authors.id\n                        LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'\n                        WHERE books.id = ?1\n\n                    ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "books",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "title",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "books",
+            "name": "title"
+          }
+        }
+      },
+      {
+        "name": "pubdate",
+        "ordinal": 2,
+        "type_info": "Datetime",
+        "origin": {
+          "Table": {
+            "table": "books",
+            "name": "pubdate"
+          }
+        }
+      },
+      {
+        "name": "author_name",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "authors",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "name": "author_id",
+        "ordinal": 4,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "authors",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "isbn",
+        "ordinal": 5,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "identifiers",
+            "name": "val"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c916763ab8bf2b90f8fd937a454f13bd755e6360ab1f291a652dd284f3913e8a"
+}
