@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n            SELECT id,\n               book_id\n            FROM book_shelf_link\n            WHERE\n                shelf = ?1\n\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "book_shelf_link",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "book_id",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "book_shelf_link",
+            "name": "book_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "43bc0a38bf265b7bb6dfbfb50e95e9ba659ef98ab62068bda5c3893b674aabf6"
+}
