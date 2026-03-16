@@ -15,6 +15,8 @@ use std::net::SocketAddr;
 
 use tower_cookies::CookieManagerLayer;
 
+use calibreweb;
+
 #[derive(Parser, Debug)]
 pub struct Args {
     #[arg(short, long, default_value = "127.0.0.1:3002")]
@@ -30,16 +32,19 @@ pub struct Args {
 #[derive(Clone, Debug, Deserialize)]
 struct AppConfig {
     database_url: String,
+    #[serde(rename = "calibre-web")]
+    calibre_web: Option<calibreweb::CalibreWebConfig>,
 }
 
 #[derive(FromRef, Clone, Debug)]
 struct AppState {
     db: SqlitePool,
+    cwstate: Option<calibreweb::CWState>,
 }
 
 impl AppState {
-    fn from_config(item: AppConfig, db: SqlitePool) -> Self {
-        AppState { db }
+    fn from_config(item: AppConfig, db: SqlitePool, cwstate: Option<calibreweb::CWState>) -> Self {
+        AppState { db, cwstate }
     }
 }
 
@@ -65,15 +70,25 @@ async fn main() {
     let pool = SqlitePool::connect(&app_config.database_url)
         .await
         .expect("cannot connect to db");
+    tracing::info!("connecting to calibre-web database");
+    let cwstate = match &app_config.calibre_web {
+        None => None,
+        Some(cw) => {
+            let cwpool = SqlitePool::connect(&cw.database_url)
+                .await
+                .expect("cannot connect to calibre-web db");
+            Some(calibreweb::CWState { db: cwpool })
+        }
+    };
 
-    let app_state = AppState::from_config(app_config, pool);
+    let app_state = AppState::from_config(app_config, pool, cwstate);
 
     let app = Router::new()
         // `get /` goes to `root`
         .route("/", get(root))
         .route("/v1/authors", get(get_authors))
         .route("/v1/books", get(get_books))
-        //.route("/v1/authors/{author_id}", get(get_authors))
+        .route("/v1/shelves", get(get_shelves))
         .with_state(app_state.clone())
         .layer(CookieManagerLayer::new())
         .layer(tower_http::compression::CompressionLayer::new())
@@ -106,6 +121,7 @@ struct V1APIResponse {
 enum CDBStruct {
     Author(Author),
     Book(Book),
+    Shelf(calibreweb::Shelf),
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -168,6 +184,22 @@ async fn get_books(State(app_state): State<AppState>) -> Result<Response, AppErr
     let cdbstruct = recs.into_iter().map(CDBStruct::Book).collect();
     let resp = V1APIResponse { data: cdbstruct };
     Ok(Json(resp).into_response())
+}
+
+async fn get_shelves(State(app_state): State<AppState>) -> Result<Response, AppError> {
+    if let Some(cwstate) = app_state.cwstate {
+        let shelves = calibreweb::get_shelves(&cwstate).await?;
+
+        let cdbstruct = shelves.into_iter().map(CDBStruct::Shelf).collect();
+        let resp = V1APIResponse { data: cdbstruct };
+        Ok(Json(resp).into_response())
+    } else {
+        Ok((
+            StatusCode::SERVICE_UNAVAILABLE,
+            "Calibre web not configured",
+        )
+            .into_response())
+    }
 }
 
 // Make our own error that wraps `anyhow::Error`.

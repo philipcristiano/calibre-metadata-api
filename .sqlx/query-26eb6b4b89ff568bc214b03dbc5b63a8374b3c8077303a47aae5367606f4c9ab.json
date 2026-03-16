@@ -1,6 +1,6 @@
 {
   "db_name": "SQLite",
-  "query": "\n            SELECT id, name, sort, link\n            FROM authors\n        ",
+  "query": "\n            SELECT id,\n                   name,\n                   user_id\n            FROM shelf\n        ",
   "describe": {
     "columns": [
       {
@@ -9,7 +9,7 @@
         "type_info": "Integer",
         "origin": {
           "Table": {
-            "table": "authors",
+            "table": "shelf",
             "name": "id"
           }
         }
@@ -20,30 +20,19 @@
         "type_info": "Text",
         "origin": {
           "Table": {
-            "table": "authors",
+            "table": "shelf",
             "name": "name"
           }
         }
       },
       {
-        "name": "sort",
+        "name": "user_id",
         "ordinal": 2,
-        "type_info": "Text",
+        "type_info": "Integer",
         "origin": {
           "Table": {
-            "table": "authors",
-            "name": "sort"
-          }
-        }
-      },
-      {
-        "name": "link",
-        "ordinal": 3,
-        "type_info": "Text",
-        "origin": {
-          "Table": {
-            "table": "authors",
-            "name": "link"
+            "table": "shelf",
+            "name": "user_id"
           }
         }
       }
@@ -53,10 +42,9 @@
     },
     "nullable": [
       false,
-      false,
       true,
-      false
+      true
     ]
   },
-  "hash": "c5952af71eb1b7f268fe11d8ecf69a475d6a60ba022d269f59be11d975d552e6"
+  "hash": "26eb6b4b89ff568bc214b03dbc5b63a8374b3c8077303a47aae5367606f4c9ab"
 }
