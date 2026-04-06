@@ -8,26 +8,45 @@ on:
 
 jobs:
 
-  check-for-cc:
-    runs-on: ubuntu-latest
+  check:
+    runs-on: nixos-runner
     steps:
-      - name: check-for-cc
-        id: check-for-cc
-        uses: agenthunt/conventional-commit-checker-action@v2.0.1
+      - uses: actions/checkout@v6
 
-  docker_build:
-    uses: "philipcristiano/workflows/.github/workflows/docker-build.yml@main"
-    with:
-      timeout: 25
-      check_command: "-h"
+      - name: Generate Cargo.nix
+        run: crate2nix generate
 
-  rust:
-    uses: "philipcristiano/workflows/.github/workflows/rust.yml@main"
+      - name: Fail if Cargo.nix is out of date
+        run: |
+          if ! git diff --exit-code Cargo.nix; then
+            echo "Cargo.nix is out of date. Run 'nix run github:nix-community/crate2nix -- generate' and commit the result."
+            exit 1
+          fi
 
   flake:
-    uses: "philipcristiano/workflows/.github/workflows/nix.yml@main"
-    with:
-      flakes-from-devshell: true
-      script: |
-        export SQLX_OFFLINE=true
-        cargo build
+    runs-on: nixos-runner
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Attic cache
+        uses: ryanccn/attic-action@v0
+        with:
+          endpoint: ${{ secrets.ATTIC_ENDPOINT }}
+          cache: ${{ secrets.ATTIC_CACHE }}
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      - name: Build
+        run: nix --experimental-features 'nix-command flakes' build -L --option log-lines 200
+
+      - name: Build Docker
+        run: |
+          # Pull tags
+          git fetch --tags --force
+
+          # If git-cliff returns "vA.B.C" but VERSION file should be "A.B.C":
+          VERSION=$(git-cliff --config cliff.toml --bumped-version 2>/dev/null | sed 's/^v//')
+          echo "$VERSION" > VERSION
+
+          nix --experimental-features 'nix-command flakes' build '#docker' -L --option log-lines 200
+
+          IMAGE=$(docker load < result | awk '/Loaded image:/ {print $3}')
