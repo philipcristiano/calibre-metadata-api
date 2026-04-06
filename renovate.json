@@ -12,5 +12,15 @@
       "matchUpdateTypes": ["minor", "patch", "pin", "digest", "lockFileMaintenance"],
       "automerge": true
     }
+  ],
+  "postUpgradeTasks": {
+    "commands": [
+      "crate2nix generate"
+    ],
+    "fileFilters": ["Cargo.nix"],
+    "executionMode": "branch"
+  },
+  "allowedPostUpgradeCommands": [
+    "^crate2nix generate$"
   ]
 }
