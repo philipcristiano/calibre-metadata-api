@@ -27,6 +27,15 @@
               nativeBuildInputs = (attrs.nativeBuildInputs or []) ++ [ pkgs.tailwindcss ];
               SQLX_OFFLINE = true;
               SQLX_OFFLINE_DIR = ".sqlx";
+              # https://github.com/launchbadge/sqlx/issues/1021
+              CARGO = "${pkgs.cargo}/bin/cargo";
+              CARGO_MANIFEST_DIR = attrs.src;
+            };
+            calibreweb = attrs: {
+              SQLX_OFFLINE = true;
+              SQLX_OFFLINE_DIR = "${self}/.sqlx";
+              CARGO = "${pkgs.cargo}/bin/cargo";
+              CARGO_MANIFEST_DIR = attrs.src;
             };
           };
         };
@@ -42,11 +51,6 @@
             pkgs.opentelemetry-collector
             pkgs.crate2nix
           ];
-          shellHook = ''
-            export PGDATA=$PWD/pgdata
-            export PGDATABASE=et
-            export PGUSER=et
-          '';
         };
 
         packages.default = package;
