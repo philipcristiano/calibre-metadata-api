@@ -26,6 +26,7 @@
             ${package_name} = attrs: {
               nativeBuildInputs = (attrs.nativeBuildInputs or []) ++ [ pkgs.tailwindcss ];
               SQLX_OFFLINE = true;
+              SQLX_OFFLINE_DIR = ".sqlx";
             };
           };
         };
