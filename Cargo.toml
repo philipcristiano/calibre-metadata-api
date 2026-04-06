@@ -22,7 +22,7 @@ path = "src/main.rs"
 anyhow = "1.0.82"
 axum = { version = "0.8.0", features = ["macros"]}
 serde = { version = "1.0.200", features = ["derive"] }
-sqlx = { version = "0.9.0-alpha.1", ref = "05c8dc14a82c25fbe13c97886991940837119fca", git = "https://github.com/launchbadge/sqlx.git", features = ["runtime-tokio", "tls-rustls", "sqlite", "macros", "uuid", "chrono", "rust_decimal", "sqlx-toml"] }
+sqlx = { version = "0.9.0-alpha.1", ref = "69843167e500e0402b0b3b8c707e3036690f2ed6", git = "https://github.com/launchbadge/sqlx.git", features = ["runtime-tokio", "tls-rustls", "sqlite", "macros", "uuid", "chrono", "rust_decimal", "sqlx-toml"] }
 
 [dependencies]
 anyhow = {workspace = true}
@@ -35,7 +35,7 @@ serde_json = "1.0.116"
 service_conventions = { version = "0.0.34", features = ["tracing", "oidc"]}
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "0.9.0"
-tonic = { version = "0.14.0", features = ["tls", "tls-roots"] }
+tonic = { version = "0.12.0", features = ["tls", "tls-roots"] }
 tower-http = { version = "0.6.0", features = ["tracing", "trace"] }
 tracing = "0.1.40"
 url = "2.5.0"
