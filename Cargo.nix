@@ -1751,7 +1751,7 @@ rec {
           }
           {
             name = "toml";
-            packageId = "toml 0.9.12+spec-1.1.0";
+            packageId = "toml 1.1.2+spec-1.1.0";
           }
           {
             name = "tonic";
@@ -14990,11 +14990,11 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "display" "parse" ];
       };
-      "toml 0.9.12+spec-1.1.0" = rec {
+      "toml 1.1.2+spec-1.1.0" = rec {
         crateName = "toml";
-        version = "0.9.12+spec-1.1.0";
-        edition = "2021";
-        sha256 = "0qwqbrymqn88mg2yqyq3rj52z6p20448z0jxdbpjsbpwg5g894ng";
+        version = "1.1.2+spec-1.1.0";
+        edition = "2024";
+        sha256 = "1vpggpamqhw4852kic7465zsidczsla06wz6friqkkfbhigd3ww1";
         dependencies = [
           {
             name = "indexmap";
@@ -15017,7 +15017,7 @@ rec {
           }
           {
             name = "toml_datetime";
-            packageId = "toml_datetime 0.7.5+spec-1.1.0";
+            packageId = "toml_datetime 1.1.1+spec-1.1.0";
             usesDefaultFeatures = false;
             features = [ "alloc" ];
           }
@@ -15037,7 +15037,7 @@ rec {
           }
           {
             name = "winnow";
-            packageId = "winnow 0.7.15";
+            packageId = "winnow 1.0.1";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -15071,27 +15071,6 @@ rec {
         };
         resolvedDefaultFeatures = [ "serde" ];
       };
-      "toml_datetime 0.7.5+spec-1.1.0" = rec {
-        crateName = "toml_datetime";
-        version = "0.7.5+spec-1.1.0";
-        edition = "2021";
-        sha256 = "0iqkgvgsxmszpai53dbip7sf2igic39s4dby29dbqf1h9bnwzqcj";
-        dependencies = [
-          {
-            name = "serde_core";
-            packageId = "serde_core";
-            optional = true;
-            usesDefaultFeatures = false;
-          }
-        ];
-        features = {
-          "alloc" = [ "serde_core?/alloc" ];
-          "default" = [ "std" ];
-          "serde" = [ "dep:serde_core" ];
-          "std" = [ "alloc" "serde_core?/std" ];
-        };
-        resolvedDefaultFeatures = [ "alloc" "serde" "std" ];
-      };
       "toml_datetime 1.1.1+spec-1.1.0" = rec {
         crateName = "toml_datetime";
         version = "1.1.1+spec-1.1.0";
@@ -15111,7 +15090,7 @@ rec {
           "serde" = [ "dep:serde_core" ];
           "std" = [ "alloc" "serde_core?/std" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "default" "std" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "serde" "std" ];
       };
       "toml_edit 0.22.27" = rec {
         crateName = "toml_edit";
