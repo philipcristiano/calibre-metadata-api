@@ -1700,7 +1700,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             features = [ "serde" ];
           }
           {
@@ -4669,7 +4669,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             features = [ "std" ];
           }
           {
@@ -4805,6 +4805,27 @@ rec {
           "serde" = [ "dep:serde_core" "dep:serde" ];
         };
         resolvedDefaultFeatures = [ "allocator-api2" "default" "default-hasher" "equivalent" "inline-more" "raw-entry" ];
+      };
+      "hashbrown 0.17.0" = rec {
+        crateName = "hashbrown";
+        version = "0.17.0";
+        edition = "2024";
+        sha256 = "0l8gvcz80lvinb7x22h53cqbi2y1fm603y2jhhh9qwygvkb7sijg";
+        authors = [
+          "Amanieu d'Antras <amanieu@gmail.com>"
+        ];
+        features = {
+          "alloc" = [ "dep:alloc" ];
+          "allocator-api2" = [ "dep:allocator-api2" ];
+          "core" = [ "dep:core" ];
+          "default" = [ "default-hasher" "inline-more" "allocator-api2" "equivalent" "raw-entry" ];
+          "default-hasher" = [ "dep:foldhash" ];
+          "equivalent" = [ "dep:equivalent" ];
+          "nightly" = [ "foldhash?/nightly" "bumpalo/allocator_api" ];
+          "rayon" = [ "dep:rayon" ];
+          "rustc-dep-of-std" = [ "nightly" "core" "alloc" "rustc-internal-api" ];
+          "serde" = [ "dep:serde_core" "dep:serde" ];
+        };
       };
       "hashlink" = rec {
         crateName = "hashlink";
@@ -6012,11 +6033,11 @@ rec {
         };
         resolvedDefaultFeatures = [ "serde" "serde-1" "std" ];
       };
-      "indexmap 2.13.1" = rec {
+      "indexmap 2.14.0" = rec {
         crateName = "indexmap";
-        version = "2.13.1";
-        edition = "2021";
-        sha256 = "1zs2af09vgdaix8qzhi3bd12zpn5za7pbc6v0cc0q2ryrfws5a25";
+        version = "2.14.0";
+        edition = "2024";
+        sha256 = "1na9z6f0d5pkjr1lgsni470v98gv2r7c41j8w48skr089x2yjrnl";
         dependencies = [
           {
             name = "equivalent";
@@ -6025,7 +6046,7 @@ rec {
           }
           {
             name = "hashbrown";
-            packageId = "hashbrown 0.16.1";
+            packageId = "hashbrown 0.17.0";
             usesDefaultFeatures = false;
           }
           {
@@ -11889,7 +11910,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
           }
           {
             name = "itoa";
@@ -12179,7 +12200,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             rename = "indexmap_2";
             optional = true;
             usesDefaultFeatures = false;
@@ -13066,7 +13087,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
           }
           {
             name = "log";
@@ -14998,7 +15019,7 @@ rec {
         dependencies = [
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -15100,7 +15121,7 @@ rec {
         dependencies = [
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             features = [ "std" ];
           }
           {
@@ -15154,7 +15175,7 @@ rec {
         dependencies = [
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             features = [ "std" ];
           }
           {
@@ -15715,7 +15736,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             optional = true;
           }
           {
@@ -17063,7 +17084,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             usesDefaultFeatures = false;
             features = [ "serde" ];
           }
@@ -17109,7 +17130,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -19708,7 +19729,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
           }
           {
             name = "prettyplease";
@@ -19803,7 +19824,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             usesDefaultFeatures = false;
           }
           {
@@ -19887,7 +19908,7 @@ rec {
           }
           {
             name = "indexmap";
-            packageId = "indexmap 2.13.1";
+            packageId = "indexmap 2.14.0";
             usesDefaultFeatures = false;
             features = [ "std" ];
           }
