@@ -3624,9 +3624,9 @@ dependencies = [
 
 [[package]]
 name = "service_conventions"
-version = "0.0.34"
+version = "0.0.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce05b962683ef328103b6e93122eb9ccba2079bc82dbb4136ba3ebd5df9afca9"
+checksum = "6c341faa84faf234ff65f12852eab5a69491233bcac4cf7c164cacffece4e02a"
 dependencies = [
  "anyhow",
  "async-trait",
