@@ -12314,9 +12314,9 @@ rec {
       };
       "service_conventions" = rec {
         crateName = "service_conventions";
-        version = "0.0.34";
+        version = "0.0.35";
         edition = "2021";
-        sha256 = "1agwkbgxbsx3dc9v9nw2piwj1fncp4p154vf7c82iwryd1ibj1ff";
+        sha256 = "0ap0wkngzb2c2ryczi6a7cir3556npm54a7icpzk9wpshjm1yd3c";
         dependencies = [
           {
             name = "anyhow";
