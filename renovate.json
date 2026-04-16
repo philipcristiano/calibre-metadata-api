@@ -19,8 +19,5 @@
     ],
     "fileFilters": ["Cargo.nix"],
     "executionMode": "branch"
-  },
-  "allowedPostUpgradeCommands": [
-    "^crate2nix generate$"
-  ]
+  }]
 }
