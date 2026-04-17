@@ -1,0 +1,9 @@
+{
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-core@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-macros-core@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-macros@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-mysql@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-postgres@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx-sqlite@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f",
+  "git+https://github.com/launchbadge/sqlx.git#sqlx@0.9.0-alpha.1": "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f"
+}
