@@ -35,7 +35,7 @@ serde_json = "1.0.116"
 service_conventions = { version = "0.0.37", features = ["tracing", "oidc"]}
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "1.0.0"
-tonic = { version = "0.12.0", features = ["tls", "tls-roots"] }
+tonic = { version = "0.14.0", features = ["tls", "tls-roots"] }
 tower-http = { version = "0.6.0", features = ["tracing", "trace"] }
 tracing = "0.1.40"
 url = "2.5.0"
