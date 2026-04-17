@@ -19,5 +19,5 @@
     ],
     "fileFilters": ["Cargo.nix"],
     "executionMode": "branch"
-  }]
+  }
 }
