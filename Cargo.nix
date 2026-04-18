@@ -5907,9 +5907,9 @@ rec {
       };
       "jsonwebtoken" = rec {
         crateName = "jsonwebtoken";
-        version = "9.3.1";
-        edition = "2021";
-        sha256 = "1plx2qf8mpg96bpsa1aalfsf4jvgwcnl6i37x7masysk91xcr1ss";
+        version = "10.3.0";
+        edition = "2024";
+        sha256 = "1q8w7j0f8iycr97rqk05ys3lr67q9mw9i20h1fk2k1r3pq542a85";
         authors = [
           "Vincent Prouillet <hello@vincentprouillet.com>"
         ];
@@ -5917,6 +5917,11 @@ rec {
           {
             name = "base64";
             packageId = "base64 0.22.1";
+          }
+          {
+            name = "getrandom";
+            packageId = "getrandom 0.2.17";
+            target = { target, features }: ("wasm32" == target."arch" or null);
           }
           {
             name = "js-sys";
@@ -5929,18 +5934,6 @@ rec {
             optional = true;
           }
           {
-            name = "ring";
-            packageId = "ring";
-            target = { target, features }: (!("wasm32" == target."arch" or null));
-            features = [ "std" ];
-          }
-          {
-            name = "ring";
-            packageId = "ring";
-            target = { target, features }: ("wasm32" == target."arch" or null);
-            features = [ "std" "wasm32_unknown_unknown_js" ];
-          }
-          {
             name = "serde";
             packageId = "serde";
             features = [ "derive" ];
@@ -5950,14 +5943,29 @@ rec {
             packageId = "serde_json";
           }
           {
+            name = "signature";
+            packageId = "signature";
+            features = [ "std" ];
+          }
+          {
             name = "simple_asn1";
             packageId = "simple_asn1";
             optional = true;
           }
         ];
         features = {
+          "aws-lc-rs" = [ "dep:aws-lc-rs" ];
+          "aws_lc_rs" = [ "aws-lc-rs" ];
           "default" = [ "use_pem" ];
+          "ed25519-dalek" = [ "dep:ed25519-dalek" ];
+          "hmac" = [ "dep:hmac" ];
+          "p256" = [ "dep:p256" ];
+          "p384" = [ "dep:p384" ];
           "pem" = [ "dep:pem" ];
+          "rand" = [ "dep:rand" ];
+          "rsa" = [ "dep:rsa" ];
+          "rust_crypto" = [ "ed25519-dalek" "hmac" "p256" "p384" "rand" "rsa" "sha2" ];
+          "sha2" = [ "dep:sha2" ];
           "simple_asn1" = [ "dep:simple_asn1" ];
           "use_pem" = [ "pem" "simple_asn1" ];
         };
@@ -9657,7 +9665,7 @@ rec {
           "std" = [ "alloc" ];
           "wasm32_unknown_unknown_js" = [ "getrandom/js" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "default" "dev_urandom_fallback" "std" "wasm32_unknown_unknown_js" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "dev_urandom_fallback" "wasm32_unknown_unknown_js" ];
       };
       "rkyv" = rec {
         crateName = "rkyv";
