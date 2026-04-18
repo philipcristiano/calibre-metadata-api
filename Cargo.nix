@@ -11919,7 +11919,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         authors = [
           "Ryan Leckey <leckey.ryan@gmail.com>"
@@ -12012,7 +12012,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_core";
         authors = [
@@ -12247,7 +12247,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         procMacro = true;
         libName = "sqlx_macros";
@@ -12324,7 +12324,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_macros_core";
         authors = [
@@ -12474,7 +12474,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_mysql";
         authors = [
@@ -12615,7 +12615,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_postgres";
         authors = [
@@ -12805,7 +12805,7 @@ rec {
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
           rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
-          sha256 = "1kdxl04w8y76y8qb5fdhd789bx622r09r9558gk8cph47wpj8r7f";
+          sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_sqlite";
         authors = [
