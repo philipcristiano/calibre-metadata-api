@@ -22,7 +22,7 @@ path = "src/main.rs"
 anyhow = "1.0.82"
 axum = { version = "0.8.0", features = ["macros"]}
 serde = { version = "1.0.200", features = ["derive"] }
-sqlx = { version = "0.9.0-alpha.1", ref = "69843167e500e0402b0b3b8c707e3036690f2ed6", git = "https://github.com/launchbadge/sqlx.git", features = ["runtime-tokio", "tls-rustls", "sqlite", "macros", "uuid", "chrono", "rust_decimal", "sqlx-toml"] }
+sqlx = { version = "0.9.0-alpha.1", ref = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc", git = "https://github.com/launchbadge/sqlx.git", features = ["runtime-tokio", "tls-rustls", "sqlite", "macros", "uuid", "chrono", "rust_decimal", "sqlx-toml"] }
 
 [dependencies]
 anyhow = {workspace = true}
@@ -35,7 +35,7 @@ serde_json = "1.0.116"
 service_conventions = { version = "0.0.37", features = ["tracing", "oidc"]}
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "1.0.0"
-tonic = { version = "0.12.0", features = ["tls", "tls-roots"] }
+tonic = { version = "0.14.0", features = ["tls-aws-lc"] }
 tower-http = { version = "0.6.0", features = ["tracing", "trace"] }
 tracing = "0.1.40"
 url = "2.5.0"
@@ -43,9 +43,9 @@ uuid = {version = "1.8.0", features = ["v4"]}
 
 rust-embed = { version = "8.3.0", features = ["axum", "mime-guess", "mime_guess"] }
 redacted = "0.2.0"
-jsonwebtoken = "9.3.0"
+jsonwebtoken = "10.0.0"
 indexmap = { version = "2.5.0", features = ["serde"] }
-serde_qs = { version = "0.15.0", features = ["axum", "tracing"] }
+serde_qs = { version = "1.0.0", features = ["axum", "tracing"] }
 thiserror = "2.0.0"
 http = "1.1.0"
 
