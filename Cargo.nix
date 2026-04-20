@@ -6983,9 +6983,9 @@ rec {
       };
       "openssl" = rec {
         crateName = "openssl";
-        version = "0.10.77";
+        version = "0.10.78";
         edition = "2021";
-        sha256 = "0zyqvaa85lvk77sn4jpgav8m5vjzdhyysh6ygpzpviqf6rp69r5z";
+        sha256 = "08lj1fvhpfcga3nxs40vnl4spxfrswljvncxqwyazniw85r4737k";
         authors = [
           "Steven Fackler <sfackler@gmail.com>"
         ];
@@ -7066,10 +7066,10 @@ rec {
       };
       "openssl-sys" = rec {
         crateName = "openssl-sys";
-        version = "0.9.113";
+        version = "0.9.114";
         edition = "2021";
         links = "openssl";
-        sha256 = "0i765hvmis3mg1p3a88070ihaglghgrbzln6wibqf4a7p872qbxd";
+        sha256 = "1dhvfj1nvikl4gaq9zb9ka2g7r67n03pb3s3vg7w9z07rm2i5khk";
         build = "build/main.rs";
         libName = "openssl_sys";
         authors = [
@@ -15088,9 +15088,9 @@ rec {
       };
       "typenum" = rec {
         crateName = "typenum";
-        version = "1.19.0";
+        version = "1.20.0";
         edition = "2018";
-        sha256 = "1fw2mpbn2vmqan56j1b3fbpcdg80mz26fm53fs16bq5xcq84hban";
+        sha256 = "1pj35y6q11d3y55gdl6g1h2dfhmybjming0jdi9bh0bpnqm11kj0";
         authors = [
           "Paho Lurie-Gregg <paho@paholg.com>"
           "Andre Bogus <bogusandre@gmail.com>"
