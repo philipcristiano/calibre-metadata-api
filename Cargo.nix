@@ -475,9 +475,9 @@ rec {
       };
       "async-compression" = rec {
         crateName = "async-compression";
-        version = "0.4.41";
+        version = "0.4.42";
         edition = "2018";
-        sha256 = "1lfs8dy6kla1bi8kn4h1zppv79zvk524ds8nb2nxgzq2dq7yxyfh";
+        sha256 = "1b59jb3y26pmxdshyjb7slxrp184ydlzq80ryfc2ik6cg653z6z7";
         libName = "async_compression";
         authors = [
           "Wim Looman <wim@nemo157.com>"
@@ -1589,9 +1589,9 @@ rec {
       };
       "cc" = rec {
         crateName = "cc";
-        version = "1.2.60";
+        version = "1.2.61";
         edition = "2018";
-        sha256 = "084a8ziprdlyrj865f3303qr0b7aaggilkl18slncss6m4yp1ia3";
+        sha256 = "0vawvnrrsmi8dygavq3wx085cmlp10sp3fhld5842rlqkqsr0vfi";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
         ];
@@ -1956,9 +1956,9 @@ rec {
       };
       "compression-codecs" = rec {
         crateName = "compression-codecs";
-        version = "0.4.37";
+        version = "0.4.38";
         edition = "2018";
-        sha256 = "1dqrcv8myady3z5qgj351l6ca68g2n3blq9hfwkgqry9v6km2yzb";
+        sha256 = "1kqq2b8hpv7y3jnakkp66cdlrzl6my02dapn3g12j6cw3qwlh9ff";
         libName = "compression_codecs";
         authors = [
           "Wim Looman <wim@nemo157.com>"
@@ -2004,9 +2004,9 @@ rec {
       };
       "compression-core" = rec {
         crateName = "compression-core";
-        version = "0.4.31";
+        version = "0.4.32";
         edition = "2018";
-        sha256 = "13cxnh46qvli55aqv04i3l6kiw2835ngp6mr5paa00nidvxlx63m";
+        sha256 = "12bp209x76flr67jm5fql4hq8d14nkjzkk24g9gi0yh2rxjza56c";
         libName = "compression_core";
         authors = [
           "Wim Looman <wim@nemo157.com>"
@@ -2262,9 +2262,9 @@ rec {
       };
       "crc-catalog" = rec {
         crateName = "crc-catalog";
-        version = "2.4.0";
+        version = "2.5.0";
         edition = "2018";
-        sha256 = "1xg7sz82w3nxp1jfn425fvn1clvbzb3zgblmxsyqpys0dckp9lqr";
+        sha256 = "0lq8dl60g457za8la86pak6i7ydxanm2lrpkqh5kyjkbz7m9hxi1";
         libName = "crc_catalog";
         authors = [
           "Akhil Velagapudi <akhilvelagapudi@gmail.com>"
@@ -5565,9 +5565,9 @@ rec {
       };
       "idna_adapter" = rec {
         crateName = "idna_adapter";
-        version = "1.2.1";
-        edition = "2021";
-        sha256 = "0i0339pxig6mv786nkqcxnwqa87v4m94b2653f6k3aj0jmhfkjis";
+        version = "1.2.2";
+        edition = "2024";
+        sha256 = "0557p76l8hj35r9zn1yv7c6x1c0qbrsffmg80n0yy8361ly3fs6b";
         authors = [
           "The rust-url developers"
         ];
@@ -5880,9 +5880,9 @@ rec {
       };
       "js-sys" = rec {
         crateName = "js-sys";
-        version = "0.3.95";
+        version = "0.3.97";
         edition = "2021";
-        sha256 = "1jhj3kgxxgwm0cpdjiz7i2qapqr7ya9qswadmr63dhwx3lnyjr19";
+        sha256 = "1kyaxgn1sm5am98jb48aj5j7r7s98kdrab41la5wzys5q2a0r151";
         libName = "js_sys";
         authors = [
           "The wasm-bindgen Developers"
@@ -5891,7 +5891,6 @@ rec {
           {
             name = "cfg-if";
             packageId = "cfg-if";
-            optional = true;
           }
           {
             name = "futures-util";
@@ -5913,11 +5912,10 @@ rec {
         ];
         features = {
           "default" = [ "std" "unsafe-eval" ];
-          "futures" = [ "dep:cfg-if" "dep:futures-util" ];
-          "futures-core-03-stream" = [ "futures" "dep:futures-core" ];
-          "std" = [ "wasm-bindgen/std" ];
+          "futures-core-03-stream" = [ "dep:futures-util" "dep:futures-core" ];
+          "std" = [ "wasm-bindgen/std" "dep:futures-util" ];
         };
-        resolvedDefaultFeatures = [ "default" "futures" "std" "unsafe-eval" ];
+        resolvedDefaultFeatures = [ "default" "std" "unsafe-eval" ];
       };
       "jsonwebtoken" = rec {
         crateName = "jsonwebtoken";
@@ -6066,9 +6064,9 @@ rec {
       };
       "libc" = rec {
         crateName = "libc";
-        version = "0.2.185";
+        version = "0.2.186";
         edition = "2021";
-        sha256 = "13rbdaa59l3w92q7kfcxx8zbikm99zzw54h59aqvcv5wx47jrzsj";
+        sha256 = "0rnyhzjyqq9x56skkllbjzzzwym3r61lq3l4hqj64v71gw0r3av8";
         authors = [
           "The Rust Project Developers"
         ];
@@ -10346,9 +10344,9 @@ rec {
       };
       "rustls" = rec {
         crateName = "rustls";
-        version = "0.23.38";
+        version = "0.23.40";
         edition = "2021";
-        sha256 = "089ssmhd79f0kd22brh6lkaadql2p3pi6579ax1s0kn1n9pldyb9";
+        sha256 = "12qnv3ag4wrw7aj8jng74kgrilpjm2b1rfcjaac8h691frccv1pg";
         dependencies = [
           {
             name = "aws-lc-rs";
@@ -10421,9 +10419,9 @@ rec {
       };
       "rustls-pki-types" = rec {
         crateName = "rustls-pki-types";
-        version = "1.14.0";
+        version = "1.14.1";
         edition = "2021";
-        sha256 = "1p9zsgslvwzzkzhm6bqicffqndr4jpx67992b0vl0pi21a5hy15y";
+        sha256 = "1a9pr54y0f3qr97bxpd3ahjldq0gqdld0h799xbnwdzbwxx1k9rh";
         libName = "rustls_pki_types";
         dependencies = [
           {
@@ -10449,9 +10447,9 @@ rec {
       };
       "rustls-webpki" = rec {
         crateName = "rustls-webpki";
-        version = "0.103.12";
+        version = "0.103.13";
         edition = "2021";
-        sha256 = "01nxzkfd1l96jzp04svc7iznlkarzx3wb9p63a0i17rc4y2vnyc2";
+        sha256 = "0vkm7z9pnxz5qz66p2kmyy2pwx0g4jnsbqk5xzfhs4czcjl2ki31";
         libName = "webpki";
         dependencies = [
           {
@@ -11992,7 +11990,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         authors = [
@@ -12085,7 +12083,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_core";
@@ -12320,7 +12318,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         procMacro = true;
@@ -12397,7 +12395,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_macros_core";
@@ -12547,7 +12545,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_mysql";
@@ -12688,7 +12686,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_postgres";
@@ -12878,7 +12876,7 @@ rec {
         workspace_member = null;
         src = pkgs.fetchgit {
           url = "https://github.com/launchbadge/sqlx.git";
-          rev = "b180eba9012c486e1c46d6aaf156d8f79ab37cdc";
+          rev = "b77ba16605eb49b481507a06bf2b3b4d1c33477b";
           sha256 = "084ackrpq052izr6hnlf4xh6p60xhpg7kayv8jixwqpfiyliqfk9";
         };
         libName = "sqlx_sqlite";
@@ -14073,7 +14071,7 @@ rec {
           }
           {
             name = "winnow";
-            packageId = "winnow 1.0.1";
+            packageId = "winnow 1.0.2";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -14204,7 +14202,7 @@ rec {
           }
           {
             name = "winnow";
-            packageId = "winnow 1.0.1";
+            packageId = "winnow 1.0.2";
             optional = true;
           }
         ];
@@ -14225,7 +14223,7 @@ rec {
         dependencies = [
           {
             name = "winnow";
-            packageId = "winnow 1.0.1";
+            packageId = "winnow 1.0.2";
             usesDefaultFeatures = false;
           }
         ];
@@ -15608,9 +15606,9 @@ rec {
       };
       "wasm-bindgen" = rec {
         crateName = "wasm-bindgen";
-        version = "0.2.118";
+        version = "0.2.120";
         edition = "2021";
-        sha256 = "129s5r14fx4v4xrzpx2c6l860nkxpl48j50y7kl6j16bpah3iy8b";
+        sha256 = "1cax9wy1n67sa2m16ia72lsxdrc5pzcv47psxp4p833yp3cvclnz";
         libName = "wasm_bindgen";
         authors = [
           "The wasm-bindgen Developers"
@@ -15659,9 +15657,9 @@ rec {
       };
       "wasm-bindgen-futures" = rec {
         crateName = "wasm-bindgen-futures";
-        version = "0.4.68";
+        version = "0.4.70";
         edition = "2021";
-        sha256 = "1y7bq5d9fk7s9xaayx38bgs9ns35na0kpb5zw19944zvya1x6wgk";
+        sha256 = "1130a64yig0p10mk7rnq5l2jpwglbyxpnqg6h0nlqwzcmir4i4xg";
         libName = "wasm_bindgen_futures";
         authors = [
           "The wasm-bindgen Developers"
@@ -15671,7 +15669,6 @@ rec {
             name = "js-sys";
             packageId = "js-sys";
             usesDefaultFeatures = false;
-            features = [ "futures" ];
           }
           {
             name = "wasm-bindgen";
@@ -15688,9 +15685,9 @@ rec {
       };
       "wasm-bindgen-macro" = rec {
         crateName = "wasm-bindgen-macro";
-        version = "0.2.118";
+        version = "0.2.120";
         edition = "2021";
-        sha256 = "1v98r8vs17cj8918qsg0xx4nlg4nxk1g0jd4nwnyrh1687w29zzf";
+        sha256 = "00xixpydzjd6y9knwdsrsiff6wi1ddszb1fa9bk25csz94gh9cbq";
         procMacro = true;
         libName = "wasm_bindgen_macro";
         authors = [
@@ -15712,9 +15709,9 @@ rec {
       };
       "wasm-bindgen-macro-support" = rec {
         crateName = "wasm-bindgen-macro-support";
-        version = "0.2.118";
+        version = "0.2.120";
         edition = "2021";
-        sha256 = "0169jr0q469hfx5zqxfyywf2h2f4aj17vn4zly02nfwqmxghc24x";
+        sha256 = "0h8v5aphaaq155fzz2d312zrxbka1x6lsvb8mhc8m60n0kr0zkcx";
         libName = "wasm_bindgen_macro_support";
         authors = [
           "The wasm-bindgen Developers"
@@ -15748,10 +15745,10 @@ rec {
       };
       "wasm-bindgen-shared" = rec {
         crateName = "wasm-bindgen-shared";
-        version = "0.2.118";
+        version = "0.2.120";
         edition = "2021";
         links = "wasm_bindgen";
-        sha256 = "0ag1vvdzi4334jlzilsy14y3nyzwddf1ndn62fyhf6bg62g4vl2z";
+        sha256 = "1sjrac4f4j5pgw42mxadq9v42f0bji1a2rcksrbnrwgbh8y7nxa9";
         libName = "wasm_bindgen_shared";
         authors = [
           "The wasm-bindgen Developers"
@@ -15876,9 +15873,9 @@ rec {
       };
       "web-sys" = rec {
         crateName = "web-sys";
-        version = "0.3.95";
+        version = "0.3.97";
         edition = "2021";
-        sha256 = "0zfr2jy5bpkkggl88i43yy37p538hg20i56kwn421yj9g6qznbag";
+        sha256 = "00knh8cizgb01bmh362f3f19b11f8zl1y3gj6h47pk95233vmb9f";
         libName = "web_sys";
         authors = [
           "The wasm-bindgen Developers"
@@ -16411,9 +16408,9 @@ rec {
       };
       "whoami" = rec {
         crateName = "whoami";
-        version = "2.1.1";
+        version = "2.1.2";
         edition = "2021";
-        sha256 = "0pglq0a1qnjzqblpwb9ljd1z8cr4qnxd66yvrz97iyglklpv39fn";
+        sha256 = "03d4qn43gr4fnqnrq9k2769565234hycbac20rdiy3bli3png1wr";
         features = {
           "default" = [ "std" "wasi-wasite" "wasm-web" ];
           "std" = [ "dep:libc" "dep:libredox" "dep:objc2-system-configuration" "libc?/std" "web-sys?/std" ];
@@ -17907,11 +17904,11 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
-      "winnow 1.0.1" = rec {
+      "winnow 1.0.2" = rec {
         crateName = "winnow";
-        version = "1.0.1";
+        version = "1.0.2";
         edition = "2021";
-        sha256 = "1dbji1bwviy08pl74f2qw2m4w9hc4p3vyl3lfj05jdydy59w1nh9";
+        sha256 = "1l7xnfvlgy4da6gq5ip2bgcm8i9d0rwzaxg1p88nlw8lxy5p1q9f";
         dependencies = [
           {
             name = "memchr";
