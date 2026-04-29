@@ -303,6 +303,12 @@ checksum = "4c7f02d4ea65f2c1853089ffd8d2787bdbc63de2f0d29dedbcf8ccdfa0ccd4cf"
 
 [[package]]
 name = "base64"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
+
+[[package]]
+name = "base64"
 version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
@@ -1829,6 +1835,21 @@ dependencies = [
  "serde_json",
  "signature",
  "simple_asn1",
+]
+
+[[package]]
+name = "jwt"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6204285f77fe7d9784db3fdc449ecce1a0114927a51d5a41c4c7a292011c015f"
+dependencies = [
+ "base64 0.13.1",
+ "crypto-common",
+ "digest",
+ "hmac",
+ "serde",
+ "serde_json",
+ "sha2",
 ]
 
 [[package]]
@@ -3376,9 +3397,9 @@ dependencies = [
 
 [[package]]
 name = "service_conventions"
-version = "0.0.37"
+version = "0.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8d00b7b36d1ef4b9b4dfd03668924aa0e395bb519401b6c628bfa533665f7521"
+checksum = "787cde5ae0a3efa80cdc9789e70539d4ad3a24897e762c7a8bbda74801f5df30"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3386,7 +3407,9 @@ dependencies = [
  "axum-core",
  "chrono",
  "email_address",
+ "hmac",
  "http",
+ "jwt",
  "maud",
  "once_cell",
  "openidconnect",
@@ -3397,6 +3420,7 @@ dependencies = [
  "redacted",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror 2.0.18",
  "tonic",
  "tower-cookies",

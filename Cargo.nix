@@ -1077,6 +1077,20 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" ];
       };
+      "base64 0.13.1" = rec {
+        crateName = "base64";
+        version = "0.13.1";
+        edition = "2018";
+        sha256 = "1s494mqmzjb766fy1kqlccgfg2sdcjb6hzbvzqv2jw65fdi5h6wy";
+        authors = [
+          "Alice Maz <alice@alicemaz.com>"
+          "Marshall Pierce <marshall@mpierce.org>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
       "base64 0.21.7" = rec {
         crateName = "base64";
         version = "0.21.7";
@@ -5970,6 +5984,50 @@ rec {
           "use_pem" = [ "pem" "simple_asn1" ];
         };
         resolvedDefaultFeatures = [ "default" "pem" "simple_asn1" "use_pem" ];
+      };
+      "jwt" = rec {
+        crateName = "jwt";
+        version = "0.16.0";
+        edition = "2018";
+        sha256 = "0pq13h0r58n7qi0ml7d54x4i3871rjg49p1zvf29fzgyfxgjh132";
+        authors = [
+          "Michael Yang <mikkyangg@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "base64";
+            packageId = "base64 0.13.1";
+          }
+          {
+            name = "crypto-common";
+            packageId = "crypto-common";
+          }
+          {
+            name = "digest";
+            packageId = "digest";
+          }
+          {
+            name = "hmac";
+            packageId = "hmac";
+            features = [ "reset" ];
+          }
+          {
+            name = "serde";
+            packageId = "serde";
+            features = [ "derive" ];
+          }
+          {
+            name = "serde_json";
+            packageId = "serde_json";
+          }
+          {
+            name = "sha2";
+            packageId = "sha2";
+          }
+        ];
+        features = {
+          "openssl" = [ "dep:openssl" ];
+        };
       };
       "lazy_static" = rec {
         crateName = "lazy_static";
@@ -11358,9 +11416,9 @@ rec {
       };
       "service_conventions" = rec {
         crateName = "service_conventions";
-        version = "0.0.37";
+        version = "0.0.38";
         edition = "2021";
-        sha256 = "08bmbxk379dz533bc0cla6xrbqx09a96hdnhvysbkx0ydnrvf04d";
+        sha256 = "0c6zyl0li9xxidx2qxkyi4j3mbfl742yg2cpvh6aivx3w1ddwz3q";
         dependencies = [
           {
             name = "anyhow";
@@ -11394,8 +11452,18 @@ rec {
             optional = true;
           }
           {
+            name = "hmac";
+            packageId = "hmac";
+            optional = true;
+          }
+          {
             name = "http";
             packageId = "http";
+            optional = true;
+          }
+          {
+            name = "jwt";
+            packageId = "jwt";
             optional = true;
           }
           {
@@ -11454,6 +11522,11 @@ rec {
             optional = true;
           }
           {
+            name = "sha2";
+            packageId = "sha2";
+            optional = true;
+          }
+          {
             name = "thiserror";
             packageId = "thiserror 2.0.18";
           }
@@ -11498,13 +11571,14 @@ rec {
           }
         ];
         features = {
-          "all" = [ "tracing" "oidc" "tracing-http" ];
-          "default" = [ "tracing" "oidc" "tracing-http" ];
+          "all" = [ "jwt" "tracing" "oidc" "tracing-http" ];
+          "default" = [ "jwt" "tracing" "oidc" "tracing-http" ];
+          "jwt" = [ "dep:hmac" "dep:axum-core" "dep:jwt" "dep:sha2" ];
           "oidc" = [ "dep:anyhow" "dep:chrono" "dep:once_cell" "dep:openidconnect" "dep:serde" "dep:serde_json" "dep:maud" "dep:axum" "dep:tower-cookies" "dep:url" "dep:email_address" "dep:http" "dep:async-trait" "dep:axum-core" "dep:redacted" ];
           "tracing" = [ "dep:opentelemetry" "dep:opentelemetry-otlp" "dep:opentelemetry-semantic-conventions" "dep:tracing-subscriber" "dep:tracing" "dep:tracing-opentelemetry" "dep:opentelemetry_sdk" "dep:tonic" ];
           "tracing-http" = [ "tracing" "dep:http" "dep:tower-http" ];
         };
-        resolvedDefaultFeatures = [ "default" "oidc" "tracing" "tracing-http" ];
+        resolvedDefaultFeatures = [ "default" "jwt" "oidc" "tracing" "tracing-http" ];
       };
       "sha1" = rec {
         crateName = "sha1";

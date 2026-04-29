@@ -32,7 +32,7 @@ sqlx = { workspace = true, features = ["sqlx-toml"]}
 chrono = {version = "0.4.41", features = ["serde"] }
 clap = { version = "4.5.4", features = ["derive", "env"]}
 serde_json = "1.0.116"
-service_conventions = { version = "0.0.37", features = ["tracing", "oidc"]}
+service_conventions = { version = "0.0.38", features = ["tracing", "oidc"]}
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "1.0.0"
 tonic = { version = "0.14.0", features = ["tls-aws-lc"] }
