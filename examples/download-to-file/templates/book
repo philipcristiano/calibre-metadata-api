@@ -7,3 +7,5 @@ title: "{{title}}"
 ---
 
 {{title}} was imported from Calibre
+
+{{title}} is book {{series_index}} of [[{{series_name}}]]

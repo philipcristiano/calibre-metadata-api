@@ -44,6 +44,8 @@ struct Book {
     //pubdate: Option<chrono::NaiveDateTime>,
     author_name: String,
     author_id: i64,
+    series_name: String,
+    series_index: f64,
 }
 
 
