@@ -3,9 +3,12 @@ type: Book
 source: Calibre
 author: "[[{{author_name}}]]"
 title: "{{title}}"
-
+{% if series_index %}series_index: {{series_index}} {% endif %}
+{% if series_name %}series: "[[{{series_name}}]]" {% endif %}
 ---
 
 {{title}} was imported from Calibre
 
+{% if series_name %}
 {{title}} is book {{series_index}} of [[{{series_name}}]]
+{% endif %}
