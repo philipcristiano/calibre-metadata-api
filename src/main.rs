@@ -142,6 +142,8 @@ struct Book {
     pubdate: Option<chrono::NaiveDateTime>,
     author_name: String,
     author_id: i64,
+    series_index: Option<f64>,
+    series_name: Option<String>,
     isbn: Option<String>,
 }
 
@@ -169,12 +171,18 @@ async fn get_books(State(app_state): State<AppState>) -> Result<Response, AppErr
                    title, pubdate,
                    authors.name as author_name,
                    authors.id as author_id,
+                   books.series_index as series_index,
+                   series.name as series_name,
                    i.val as isbn
             FROM books
             JOIN books_authors_link bal
                 ON bal.book = books.id
             JOIN authors
                 ON bal.author = authors.id
+            LEFT OUTER JOIN books_series_link bsl
+                ON bsl.book = books.id
+            LEFT OUTER JOIN series
+                ON bsl.series = series.id
             LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'
 
         "#
@@ -230,12 +238,18 @@ async fn get_shelved_books(
                                title, pubdate,
                                authors.name as author_name,
                                authors.id as author_id,
+                               books.series_index as series_index,
+                               series.name as series_name,
                                i.val as isbn
                         FROM books
                         JOIN books_authors_link bal
                             ON bal.book = books.id
                         JOIN authors
                             ON bal.author = authors.id
+                        LEFT OUTER JOIN books_series_link bsl
+                            ON bsl.book = books.id
+                        LEFT OUTER JOIN series
+                            ON bsl.series = series.id
                         LEFT JOIN identifiers i ON i.book = books.id AND i.type = 'isbn'
                         WHERE books.id = ?1
 
