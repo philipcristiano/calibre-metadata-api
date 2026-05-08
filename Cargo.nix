@@ -3307,7 +3307,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_Diagnostics_Debug" ];
           }
@@ -6552,7 +6552,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.61.2";
             rename = "windows";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_Console" "Win32_Storage_FileSystem" "Win32_Security" ];
@@ -8766,7 +8766,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_IO" "Win32_Networking_WinSock" ];
           }
@@ -10270,7 +10270,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Networking_WinSock" ];
           }
@@ -13245,7 +13245,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Storage_FileSystem" "Win32_Foundation" ];
           }
@@ -13634,9 +13634,9 @@ rec {
       };
       "tokio" = rec {
         crateName = "tokio";
-        version = "1.52.2";
+        version = "1.52.3";
         edition = "2021";
-        sha256 = "11l3s4kn0f0da91pvhy62c9yfi03578j3wycqnrcvm8r7xc7h2hi";
+        sha256 = "1zpzazypkg61sw91na1m85x5s4rsjym335fwwhwm1hcs70dz1iwg";
         authors = [
           "Tokio Contributors <team@tokio.rs>"
         ];
@@ -16398,7 +16398,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.59.0";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Storage_FileSystem" "Win32_System_Console" "Win32_System_SystemInformation" ];
           }
@@ -16817,7 +16817,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_System" "Win32_System_Threading" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_IO" "Win32_System_SystemInformation" "Win32_System_Threading" "default" ];
       };
       "windows-sys 0.59.0" = rec {
         crateName = "windows-sys";
@@ -17076,7 +17076,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Com" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_IO" "Win32_System_SystemInformation" "Win32_UI" "Win32_UI_Shell" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_System" "Win32_System_Com" "Win32_UI" "Win32_UI_Shell" "default" ];
       };
       "windows-sys 0.61.2" = rec {
         crateName = "windows-sys";
