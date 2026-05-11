@@ -5888,9 +5888,9 @@ rec {
       };
       "jsonwebtoken" = rec {
         crateName = "jsonwebtoken";
-        version = "10.3.0";
+        version = "10.4.0";
         edition = "2024";
-        sha256 = "1q8w7j0f8iycr97rqk05ys3lr67q9mw9i20h1fk2k1r3pq542a85";
+        sha256 = "1z649wrq8mnglsklll15dnrcji8py3x744236hzcmspx9zxjp8zb";
         authors = [
           "Vincent Prouillet <hello@vincentprouillet.com>"
         ];
@@ -5932,6 +5932,11 @@ rec {
             name = "simple_asn1";
             packageId = "simple_asn1";
             optional = true;
+          }
+          {
+            name = "zeroize";
+            packageId = "zeroize";
+            features = [ "derive" ];
           }
         ];
         features = {
@@ -18084,6 +18089,13 @@ rec {
         authors = [
           "The RustCrypto Project Developers"
         ];
+        dependencies = [
+          {
+            name = "zeroize_derive";
+            packageId = "zeroize_derive";
+            optional = true;
+          }
+        ];
         features = {
           "default" = [ "alloc" ];
           "derive" = [ "zeroize_derive" ];
@@ -18091,7 +18103,33 @@ rec {
           "std" = [ "alloc" ];
           "zeroize_derive" = [ "dep:zeroize_derive" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "default" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "derive" "zeroize_derive" ];
+      };
+      "zeroize_derive" = rec {
+        crateName = "zeroize_derive";
+        version = "1.4.3";
+        edition = "2021";
+        sha256 = "0bl5vd1lz27p4z336nximg5wrlw5j7jc8fxh7iv6r1wrhhav99c5";
+        procMacro = true;
+        authors = [
+          "The RustCrypto Project Developers"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn 2.0.117";
+            features = [ "full" "extra-traits" "visit" ];
+          }
+        ];
+
       };
       "zerotrie" = rec {
         crateName = "zerotrie";
