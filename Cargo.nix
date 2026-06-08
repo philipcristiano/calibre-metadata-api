@@ -4879,9 +4879,9 @@ rec {
       };
       "http" = rec {
         crateName = "http";
-        version = "1.4.1";
+        version = "1.4.2";
         edition = "2021";
-        sha256 = "1l7k2ia57z3q7q3ka497krzps795kd3fymm2k12lr623y4nldrwb";
+        sha256 = "09b4p8fiivkg7wm0b59fyrn1jkm7px298ci7zb9igz6n647gaw39";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
           "Carl Lerche <me@carllerche.com>"
