@@ -11,7 +11,7 @@ jobs:
   check:
     runs-on: nixos-runner
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Generate Cargo.nix
         run: crate2nix generate
@@ -26,7 +26,7 @@ jobs:
   flake:
     runs-on: nixos-runner
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Attic cache
         uses: ryanccn/attic-action@v0

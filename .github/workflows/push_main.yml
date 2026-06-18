@@ -10,7 +10,7 @@ jobs:
   flake:
     runs-on: nixos-runner
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0      # needed so git-cliff can see full history
           fetch-tags: true    # ensure all tags are present
