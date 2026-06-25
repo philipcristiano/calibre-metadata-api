@@ -1601,7 +1601,7 @@ rec {
           }
           {
             name = "tower-http";
-            packageId = "tower-http";
+            packageId = "tower-http 0.7.0";
             features = [ "tracing" "trace" ];
           }
           {
@@ -10023,7 +10023,7 @@ rec {
           }
           {
             name = "tower-http";
-            packageId = "tower-http";
+            packageId = "tower-http 0.6.11";
             usesDefaultFeatures = false;
             target = { target, features }: (!("wasm32" == target."arch" or null));
             features = [ "follow-redirect" ];
@@ -10282,7 +10282,7 @@ rec {
           }
           {
             name = "tower-http";
-            packageId = "tower-http";
+            packageId = "tower-http 0.6.11";
             usesDefaultFeatures = false;
             target = { target, features }: (!("wasm32" == target."arch" or null));
             features = [ "follow-redirect" ];
@@ -12470,7 +12470,7 @@ rec {
           }
           {
             name = "tower-http";
-            packageId = "tower-http";
+            packageId = "tower-http 0.6.11";
             optional = true;
             features = [ "tracing" "trace" "compression-gzip" ];
           }
@@ -14222,7 +14222,7 @@ rec {
           }
           {
             name = "getrandom";
-            packageId = "getrandom 0.3.4";
+            packageId = "getrandom 0.4.2";
             optional = true;
             usesDefaultFeatures = false;
             target = { target, features }: ((target."unix" or false) || (target."windows" or false) || ("wasi" == target."os" or null));
@@ -15599,7 +15599,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "axum-core" "default" "private" "signed" ];
       };
-      "tower-http" = rec {
+      "tower-http 0.6.11" = rec {
         crateName = "tower-http";
         version = "0.6.11";
         edition = "2018";
@@ -15747,6 +15747,103 @@ rec {
           "validate-request" = [ "mime" ];
         };
         resolvedDefaultFeatures = [ "compression-gzip" "default" "follow-redirect" "futures-core" "futures-util" "tokio-util" "tower" "trace" "tracing" ];
+      };
+      "tower-http 0.7.0" = rec {
+        crateName = "tower-http";
+        version = "0.7.0";
+        edition = "2018";
+        sha256 = "0cz2k1a6gj54lcqx9cxb6k7rfgwcgc2zi31xnq0vxhmh2blpa7xi";
+        libName = "tower_http";
+        authors = [
+          "Tower Maintainers <team@tower-rs.com>"
+        ];
+        dependencies = [
+          {
+            name = "bitflags";
+            packageId = "bitflags";
+          }
+          {
+            name = "bytes";
+            packageId = "bytes";
+          }
+          {
+            name = "http";
+            packageId = "http";
+          }
+          {
+            name = "http-body";
+            packageId = "http-body";
+            optional = true;
+          }
+          {
+            name = "percent-encoding";
+            packageId = "percent-encoding";
+          }
+          {
+            name = "pin-project-lite";
+            packageId = "pin-project-lite";
+          }
+          {
+            name = "tower-layer";
+            packageId = "tower-layer";
+          }
+          {
+            name = "tower-service";
+            packageId = "tower-service";
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+        ];
+        devDependencies = [
+          {
+            name = "bytes";
+            packageId = "bytes";
+          }
+          {
+            name = "http-body";
+            packageId = "http-body";
+          }
+        ];
+        features = {
+          "auth" = [ "base64" "validate-request" ];
+          "base64" = [ "dep:base64" ];
+          "catch-panic" = [ "tracing" "futures-util/std" "dep:http-body" "dep:http-body-util" ];
+          "compression-br" = [ "dep:async-compression" "async-compression?/brotli" "futures-core" "dep:http-body" "tokio-util" "dep:tokio" ];
+          "compression-deflate" = [ "dep:async-compression" "async-compression?/zlib" "futures-core" "dep:http-body" "tokio-util" "dep:tokio" ];
+          "compression-full" = [ "compression-br" "compression-deflate" "compression-gzip" "compression-zstd" ];
+          "compression-gzip" = [ "dep:async-compression" "async-compression?/gzip" "futures-core" "dep:http-body" "tokio-util" "dep:tokio" ];
+          "compression-zstd" = [ "dep:async-compression" "async-compression?/zstd" "futures-core" "dep:http-body" "tokio-util" "dep:tokio" ];
+          "decompression-br" = [ "dep:async-compression" "async-compression?/brotli" "futures-core" "dep:http-body" "dep:http-body-util" "tokio-util" "dep:tokio" ];
+          "decompression-deflate" = [ "dep:async-compression" "async-compression?/zlib" "futures-core" "dep:http-body" "dep:http-body-util" "tokio-util" "dep:tokio" ];
+          "decompression-full" = [ "decompression-br" "decompression-deflate" "decompression-gzip" "decompression-zstd" ];
+          "decompression-gzip" = [ "dep:async-compression" "async-compression?/gzip" "futures-core" "dep:http-body" "dep:http-body-util" "tokio-util" "dep:tokio" ];
+          "decompression-zstd" = [ "dep:async-compression" "async-compression?/zstd" "futures-core" "dep:http-body" "dep:http-body-util" "tokio-util" "dep:tokio" ];
+          "follow-redirect" = [ "futures-util" "dep:http-body" "dep:url" "tower/util" ];
+          "fs" = [ "dep:tokio" "tokio?/fs" "tokio?/io-util" "futures-core" "futures-util" "dep:http-body" "dep:http-body-util" "tokio-util/io" "dep:http-range-header" "mime_guess" "mime" "httpdate" "set-status" "futures-util/alloc" ];
+          "full" = [ "add-extension" "auth" "catch-panic" "compression-full" "cors" "csrf" "decompression-full" "follow-redirect" "fs" "limit" "map-request-body" "map-response-body" "metrics" "normalize-path" "on-early-drop" "propagate-header" "redirect" "request-id" "sensitive-headers" "set-header" "set-status" "timeout" "trace" "util" "validate-request" ];
+          "futures-core" = [ "dep:futures-core" ];
+          "futures-util" = [ "dep:futures-util" ];
+          "httpdate" = [ "dep:httpdate" ];
+          "limit" = [ "dep:http-body" "dep:http-body-util" ];
+          "metrics" = [ "dep:http-body" "dep:tokio" "tokio?/time" ];
+          "mime" = [ "dep:mime" ];
+          "mime_guess" = [ "dep:mime_guess" ];
+          "on-early-drop" = [ "dep:http-body" ];
+          "request-id" = [ "uuid" ];
+          "timeout" = [ "dep:http-body" "dep:tokio" "tokio?/time" ];
+          "tokio-util" = [ "dep:tokio-util" ];
+          "tower" = [ "dep:tower" ];
+          "trace" = [ "dep:http-body" "tracing" ];
+          "tracing" = [ "dep:tracing" ];
+          "util" = [ "tower" ];
+          "uuid" = [ "dep:uuid" ];
+          "validate-request" = [ "mime" ];
+        };
+        resolvedDefaultFeatures = [ "default" "trace" "tracing" ];
       };
       "tower-layer" = rec {
         crateName = "tower-layer";

@@ -472,7 +472,7 @@ dependencies = [
  "toml 1.1.2+spec-1.1.0",
  "tonic",
  "tower-cookies",
- "tower-http",
+ "tower-http 0.7.0",
  "tracing",
  "url",
  "uuid",
@@ -3086,7 +3086,7 @@ dependencies = [
  "tokio-native-tls",
  "tokio-rustls",
  "tower",
- "tower-http",
+ "tower-http 0.6.11",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -3124,7 +3124,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower",
- "tower-http",
+ "tower-http 0.6.11",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -3675,7 +3675,7 @@ dependencies = [
  "thiserror 2.0.18",
  "tonic",
  "tower-cookies",
- "tower-http",
+ "tower-http 0.6.11",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
@@ -4117,7 +4117,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32497e9a4c7b38532efcdebeef879707aa9f794296a4f0244f6f69e9bc8574bd"
 dependencies = [
  "fastrand",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "once_cell",
  "rustix",
  "windows-sys 0.61.2",
@@ -4523,6 +4523,23 @@ dependencies = [
  "tower-service",
  "tracing",
  "url",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b11f75e912b0c2be01b63d8cf8057b8c3f97cf34abb3d431a3a4c8675498e233"
+dependencies = [
+ "bitflags",
+ "bytes",
+ "http",
+ "http-body",
+ "percent-encoding",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
 ]
 
 [[package]]
