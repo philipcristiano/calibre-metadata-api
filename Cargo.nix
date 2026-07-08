@@ -420,7 +420,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.60.2";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_System_Console" "Win32_Foundation" ];
           }
@@ -445,7 +445,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.60.2";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_System_Console" "Win32_Foundation" ];
           }
@@ -2203,7 +2203,20 @@ rec {
         };
         resolvedDefaultFeatures = [ "std" ];
       };
-      "const-oid" = rec {
+      "const-oid 0.10.2" = rec {
+        crateName = "const-oid";
+        version = "0.10.2";
+        edition = "2024";
+        sha256 = "0p7m286mp8aai4sa72g7ji6qm0d4ns8wg4i4b2hj9p9615zm3vx6";
+        libName = "const_oid";
+        authors = [
+          "RustCrypto Developers"
+        ];
+        features = {
+          "arbitrary" = [ "dep:arbitrary" ];
+        };
+      };
+      "const-oid 0.9.6" = rec {
         crateName = "const-oid";
         version = "0.9.6";
         edition = "2021";
@@ -2912,7 +2925,7 @@ rec {
         dependencies = [
           {
             name = "const-oid";
-            packageId = "const-oid";
+            packageId = "const-oid 0.9.6";
             optional = true;
           }
           {
@@ -3007,7 +3020,7 @@ rec {
           }
           {
             name = "const-oid";
-            packageId = "const-oid";
+            packageId = "const-oid 0.9.6";
             optional = true;
           }
           {
@@ -3051,6 +3064,11 @@ rec {
             optional = true;
           }
           {
+            name = "const-oid";
+            packageId = "const-oid 0.10.2";
+            optional = true;
+          }
+          {
             name = "crypto-common";
             packageId = "crypto-common 0.2.2";
             rename = "common";
@@ -3072,7 +3090,7 @@ rec {
           "rand_core" = [ "common/rand_core" ];
           "zeroize" = [ "dep:zeroize" "block-buffer?/zeroize" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "block-api" "default" "mac" ];
+        resolvedDefaultFeatures = [ "alloc" "block-api" "default" "mac" "oid" ];
       };
       "displaydoc" = rec {
         crateName = "displaydoc";
@@ -3581,7 +3599,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_Diagnostics_Debug" ];
           }
@@ -6992,7 +7010,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.60.2";
             rename = "windows";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_System_Console" "Win32_Storage_FileSystem" "Win32_Security" ];
@@ -7221,7 +7239,7 @@ rec {
         dependencies = [
           {
             name = "base64";
-            packageId = "base64 0.22.1";
+            packageId = "base64 0.21.7";
           }
           {
             name = "chrono";
@@ -10606,7 +10624,7 @@ rec {
         dependencies = [
           {
             name = "const-oid";
-            packageId = "const-oid";
+            packageId = "const-oid 0.9.6";
             usesDefaultFeatures = false;
           }
           {
@@ -10696,9 +10714,9 @@ rec {
       };
       "rust-embed" = rec {
         crateName = "rust-embed";
-        version = "8.11.0";
+        version = "8.12.0";
         edition = "2018";
-        sha256 = "09wdk33zavfn2w3id20jidywvf4abfjg1wbfy21psdss6nwkq484";
+        sha256 = "1jabmc2gbkalr4m5alwansyqbxbc8wv0xq2bkyqagara4l77drz9";
         libName = "rust_embed";
         authors = [
           "pyrossh"
@@ -10734,14 +10752,14 @@ rec {
           "actix-web" = [ "dep:actix-web" ];
           "axum" = [ "dep:axum" ];
           "axum-ex" = [ "axum" "tokio" "mime_guess" ];
-          "compression" = [ "rust-embed-impl/compression" "include-flate" ];
+          "compression" = [ "rust-embed-impl/compression" "rust-embed-utils/compression" "include-flate" ];
           "debug-embed" = [ "rust-embed-impl/debug-embed" "rust-embed-utils/debug-embed" ];
           "deterministic-timestamps" = [ "rust-embed-impl/deterministic-timestamps" ];
           "hex" = [ "dep:hex" ];
           "include-exclude" = [ "rust-embed-impl/include-exclude" "rust-embed-utils/include-exclude" ];
           "include-flate" = [ "dep:include-flate" ];
           "interpolate-folder-path" = [ "rust-embed-impl/interpolate-folder-path" ];
-          "mime-guess" = [ "rust-embed-impl/mime-guess" "rust-embed-utils/mime-guess" ];
+          "mime-guess" = [ "rust-embed-utils/mime-guess" ];
           "mime_guess" = [ "dep:mime_guess" ];
           "poem" = [ "dep:poem" ];
           "poem-ex" = [ "poem" "tokio" "mime_guess" "hex" ];
@@ -10756,15 +10774,19 @@ rec {
       };
       "rust-embed-impl" = rec {
         crateName = "rust-embed-impl";
-        version = "8.11.0";
+        version = "8.12.0";
         edition = "2018";
-        sha256 = "1ancyg87vx07w5m39538bwvj3hlizk8fd15kk8argsf8qzj042fs";
+        sha256 = "15rh6kswbb8xdj6dsy51abhcqkvrp2vf88x7yxakgx1sypbc9krv";
         procMacro = true;
         libName = "rust_embed_impl";
         authors = [
           "pyrossh"
         ];
         dependencies = [
+          {
+            name = "mime_guess";
+            packageId = "mime_guess";
+          }
           {
             name = "proc-macro2";
             packageId = "proc-macro2";
@@ -10791,16 +10813,14 @@ rec {
         features = {
           "include-exclude" = [ "rust-embed-utils/include-exclude" ];
           "interpolate-folder-path" = [ "shellexpand" ];
-          "mime-guess" = [ "rust-embed-utils/mime-guess" ];
           "shellexpand" = [ "dep:shellexpand" ];
         };
-        resolvedDefaultFeatures = [ "mime-guess" ];
       };
       "rust-embed-utils" = rec {
         crateName = "rust-embed-utils";
-        version = "8.11.0";
+        version = "8.12.0";
         edition = "2018";
-        sha256 = "1cf3wmwdivxqzizav813y42ln9r9jya3q1xi6finyzzywq5yzkav";
+        sha256 = "1w4545lpqk3sji8jqbbkg8nd2kkwhldd049hbf5bb0dayr4s3zs2";
         libName = "rust_embed_utils";
         authors = [
           "pyrossh"
@@ -10813,7 +10833,7 @@ rec {
           }
           {
             name = "sha2";
-            packageId = "sha2 0.10.9";
+            packageId = "sha2 0.11.0";
           }
           {
             name = "walkdir";
@@ -10821,8 +10841,10 @@ rec {
           }
         ];
         features = {
+          "compression" = [ "include-flate" ];
           "globset" = [ "dep:globset" ];
           "include-exclude" = [ "globset" ];
+          "include-flate" = [ "dep:include-flate" ];
           "mime-guess" = [ "mime_guess" ];
           "mime_guess" = [ "dep:mime_guess" ];
         };
@@ -11057,7 +11079,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Networking_WinSock" ];
           }
@@ -11329,7 +11351,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.52.0";
             usesDefaultFeatures = false;
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Security_Cryptography" ];
@@ -12619,6 +12641,7 @@ rec {
           "oid" = [ "digest/oid" ];
           "zeroize" = [ "digest/zeroize" ];
         };
+        resolvedDefaultFeatures = [ "alloc" "default" "oid" ];
       };
       "sharded-slab" = rec {
         crateName = "sharded-slab";
@@ -12873,7 +12896,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.60.2";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Networking_WinSock" "Win32_System_IO" "Win32_System_Threading" "Win32_System_WindowsProgramming" ];
           }
@@ -14241,7 +14264,7 @@ rec {
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Storage_FileSystem" "Win32_Foundation" ];
           }
@@ -17434,7 +17457,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.61.2";
+            packageId = "windows-sys 0.52.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Storage_FileSystem" "Win32_System_Console" "Win32_System_SystemInformation" ];
           }
@@ -18140,7 +18163,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_System" "Win32_System_Threading" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Security_Cryptography" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_SystemInformation" "Win32_System_Threading" "default" ];
       };
       "windows-sys 0.60.2" = rec {
         crateName = "windows-sys";
@@ -18405,7 +18428,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_System" "Win32_System_IO" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_IO" "Win32_System_Threading" "Win32_System_WindowsProgramming" "default" ];
       };
       "windows-sys 0.61.2" = rec {
         crateName = "windows-sys";
@@ -18667,7 +18690,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Wdk" "Wdk_Foundation" "Wdk_Storage" "Wdk_Storage_FileSystem" "Wdk_System" "Wdk_System_IO" "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Security_Authentication" "Win32_Security_Authentication_Identity" "Win32_Security_Credentials" "Win32_Security_Cryptography" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Com" "Win32_System_Console" "Win32_System_Diagnostics" "Win32_System_Diagnostics_Debug" "Win32_System_IO" "Win32_System_LibraryLoader" "Win32_System_Memory" "Win32_System_Pipes" "Win32_System_SystemInformation" "Win32_System_SystemServices" "Win32_System_Threading" "Win32_System_WindowsProgramming" "Win32_UI" "Win32_UI_Shell" "default" ];
+        resolvedDefaultFeatures = [ "Wdk" "Wdk_Foundation" "Wdk_Storage" "Wdk_Storage_FileSystem" "Wdk_System" "Wdk_System_IO" "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Security" "Win32_Security_Authentication" "Win32_Security_Authentication_Identity" "Win32_Security_Credentials" "Win32_Security_Cryptography" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Com" "Win32_System_Console" "Win32_System_IO" "Win32_System_LibraryLoader" "Win32_System_Memory" "Win32_System_Pipes" "Win32_System_SystemInformation" "Win32_System_SystemServices" "Win32_System_Threading" "Win32_System_WindowsProgramming" "Win32_UI" "Win32_UI_Shell" "default" ];
       };
       "windows-targets 0.42.2" = rec {
         crateName = "windows-targets";
